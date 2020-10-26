@@ -52,7 +52,7 @@ class TimeTable():
         # Defining a horizontal kernel to detect all horizontal lines of image
         hor_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_len, 1))
         # A kernel of 2x2
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
 
 
         #Use vertical kernel to detect and save the vertical lines in a jpg
@@ -164,5 +164,5 @@ class TimeTable():
         dataframe = dataframe.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
-        data.to_excel(os.path.join(os.get.cwd(),f"../Data/{self.id}.xlsx")
+        data.to_excel(os.path.join(os.get.cwd(),f"../Data/{self.id}.xlsx"))
 TimeTable("../Images/test2.png")
