@@ -31,13 +31,13 @@ def sort_contours(cnts, method="left-to-right"):
     return (cnts, boundingBoxes)
 
 class TimeTable():
-    def __init__(self, image : str = ""):
+    def __init__(self, image : str = "", id: int = 0):
+        self.id = id
         if image == "":
             print("Error, No Image was given.")
         else:
             self.__class__.readfile(self, image)
-        self.id = id
-    def readfile(self, image, id):
+    def readfile(self, image):
         self.img = cv2.imread(image, 0)
 
         #thresholding the image to a binary image
@@ -164,5 +164,5 @@ class TimeTable():
         dataframe = dataframe.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
-        data.to_excel(os.path.join(os.get.cwd(),f"../Data/{self.id}.xlsx"))
-TimeTable("../Images/test2.png")
+        data.to_excel(os.path.join(os.getcwd(),f"../Data/{self.id}.xlsx"))
+TimeTable("../Images/test2.png", 1)
