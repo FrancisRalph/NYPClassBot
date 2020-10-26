@@ -26,4 +26,5 @@ Werkzeug==1.0.1
 wrapt==1.12.1
 WTForms==2.3.3
 opencv-python==4.4.0.44 
-matplotlib 3.3.2
+matplotlib==3.3.2
+discord.py==1.5.1
