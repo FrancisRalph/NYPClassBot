@@ -22,6 +22,7 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 #download models
 #esdr: https://github.com/Saafke/EDSR_Tensorflow/tree/master/models
-#lapsrn: https://github.com/Saafke/FSRCNN_Tensorflow/tree/master/models
+#fsrcnn: https://github.com/Saafke/FSRCNN_Tensorflow/tree/master/models
 #espcn: https://github.com/fannymonori/TF-ESPCN/tree/master/export
-#fsrcnn: https://github.com/fannymonori/TF-LapSRN/tree/master/export
+#lapsrn: https://github.com/fannymonori/TF-LapSRN/tree/master/export
+#so far, esdr produced the best results
