@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from pathlib import Path
 
-root_path = Path(__file__).parents[0]
+root_path = str(Path(__file__).parents[0])
 
 command_prefix = "!"
 
@@ -31,8 +31,11 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-    for file in os.listdir(root_path + "/bot_cogs"):
+    cogs_path = "bot_cogs"
+    for file in os.listdir("{}/{}".format(root_path, cogs_path)):
         if file.endswith(".py"):
-            bot.load_extension(file)
+            # get .py files in bot_cogs and load it
+            # e.g load_extension("bot_cogs.timetable")
+            bot.load_extension("{}.{}".format(cogs_path, file[:-3]))
 
     bot.run('NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ')
