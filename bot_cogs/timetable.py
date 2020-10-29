@@ -45,7 +45,7 @@ class TimeTable(BaseCog):
         try:
             received_msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=30)
         except asyncio.TimeoutError:
-            await ctx.send("You did not send an image on time, the prompt has been cancelled.")
+            await author.send("You did not send an image on time, the prompt has been cancelled.")
             return
         else:
             attachment = received_msg.attachments[0]
