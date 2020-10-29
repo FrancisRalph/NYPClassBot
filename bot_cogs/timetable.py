@@ -86,9 +86,6 @@ class TimeTable(BaseCog):
             os.remove(attachment_path)
 
         await author.send("Converted to data! Took {:.3f}s".format(save_duration))
-        await author.send(dataframe.to_string()[:500])
-
-        print("dataframe: {}".format(dataframe.to_string()))
 
     @timetable.command(usage="<name>", enabled=False)
     async def remove(self, ctx: commands.Context, name: str):
