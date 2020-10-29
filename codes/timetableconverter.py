@@ -10,7 +10,10 @@ except ImportError:
     import Image
 import pytesseract
 
-pytesseract.pytesseract.tesseract_cmd = os.path.join(os.getcwd(), "Tesseract-OCR/tesseract.exe")
+if "ON_HEROKU" not in os.environ:
+    # if file is not hosted on heroku, but on your local pc,
+    # use the Tesseract-OCR .exe from here
+    pytesseract.pytesseract.tesseract_cmd = os.path.join(os.getcwd(), "Tesseract-OCR/tesseract.exe")
 
 def sort_contours(cnts, method="left-to-right"):
     # initialize the reverse flag and sort index
