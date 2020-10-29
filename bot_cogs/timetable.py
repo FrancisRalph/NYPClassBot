@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from bot_cogs.base.base_cog import BaseCog
 from codes.timetableconverter import TimeTable as TimeTableConverter
+from bot import root_path
 
 valid_image_extensions = ("jpg", "jpeg", "png")
 
@@ -61,7 +62,7 @@ class TimeTable(BaseCog):
         await author.send("Processing the image...")
 
         try:
-            attachment_path = "./Images/{}.png".format(attachment.id)
+            attachment_path = "{}/Images/{}.png".format(root_path, attachment.id)
             attachment_size = await attachment.save(attachment_path)
         except Exception as error:
             await author.send(
