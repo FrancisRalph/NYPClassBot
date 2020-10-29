@@ -1,5 +1,7 @@
 /env
-/Images
-/Data
+/Images/*.png
+/Data/*.xlsx
 /input
 /models
+/Tesseract-OCR
+/.vscode
