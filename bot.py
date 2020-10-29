@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import discord
 from discord.ext import commands
@@ -10,9 +11,14 @@ command_prefix = "!"
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 
+
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
+
+    # track when bot started so that !uptime can be used
+    # to check if bot has updated
+    bot.start_time = datetime.utcnow()
 
     # Change bot activity to "!help"
     await bot.change_presence(

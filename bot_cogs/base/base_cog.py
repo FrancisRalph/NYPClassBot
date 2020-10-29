@@ -1,10 +1,15 @@
-import discord
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from bot import bot
+
 from discord.ext import commands
 
 
 class BaseCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+    def __init__(self, _bot: type(bot)):
+        self.bot = _bot
 
     @commands.Cog.listener()
     async def on_ready(self):

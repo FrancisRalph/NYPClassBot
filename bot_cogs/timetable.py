@@ -11,14 +11,19 @@ valid_image_extensions = ("jpg", "jpeg", "png")
 
 
 class TimeTable(BaseCog):
-    @commands.command()
-    async def upload_timetable(self, ctx: commands.Context):
+    @commands.group()
+    async def timetable(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help("timetable")
+
+    @timetable.command(usage="<name>")
+    async def add(self, ctx: commands.Context, name: str):
         author: Union[discord.User, discord.Member] = ctx.author
 
         try:
             await author.send("Please upload an image of the timetable from the NYP website.")
-        except Exception as e:
-            if type(e) == discord.Forbidden:
+        except Exception as error:
+            if isinstance(error, discord.Forbidden):
                 await ctx.send(
                     "{} please turn on your DMs and try again."
                     .format(author.mention)
@@ -26,7 +31,7 @@ class TimeTable(BaseCog):
             else:
                 await ctx.send(
                     "{} I was unable to send you a DM. Error: {}"
-                    .format(author.mention, e)
+                    .format(author.mention, error)
                 )
             # stop function from running since DM could not be sent
             return
@@ -53,6 +58,14 @@ class TimeTable(BaseCog):
                 "(WIP) You sent {} image(s).\n{}"
                 .format(len(received_msg.attachments), attachment.url)
             )
+
+    @timetable.command(usage="<name>", enabled=False)
+    async def remove(self, ctx: commands.Context, name: str):
+        pass
+
+    @timetable.command(usage="<name>", enabled=False)
+    async def list(self, ctx: commands.Context):
+        pass
 
 
 def setup(bot: commands.Bot):
