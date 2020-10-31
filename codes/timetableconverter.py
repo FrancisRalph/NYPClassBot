@@ -165,4 +165,4 @@ class TimeTable():
         data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
         data.to_excel(os.path.join(os.getcwd(),f"../Data/{self.id}.xlsx"))
-TimeTable("../Images/test2.png", 1)
+TimeTable("../Images/upscaled.png", 1)
