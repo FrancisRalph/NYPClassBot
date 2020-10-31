@@ -9,7 +9,11 @@ try:
 except ImportError:
     import Image
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = os.path.join(os.getcwd(), "../Tesseract-OCR/tesseract.exe")
+
+if "ON_HEROKU" not in os.environ:
+    # if file is not hosted on heroku, but on your local pc,
+    # use the Tesseract-OCR .exe from here
+    pytesseract.pytesseract.tesseract_cmd = os.path.join(os.getcwd(), "Tesseract-OCR/tesseract.exe")
 
 def sort_contours(cnts, method="left-to-right"):
     # initialize the reverse flag and sort index
@@ -35,9 +39,8 @@ class TimeTable():
         self.id = id
         if image == "":
             print("Error, No Image was given.")
-        else:
-            self.__class__.readfile(self, image)
-    def readfile(self, image):
+
+    async def readfile(self, image):
         self.img = cv2.imread(image, 0)
 
         #thresholding the image to a binary image
@@ -164,5 +167,11 @@ class TimeTable():
         dataframe = dataframe.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
-        data.to_excel(os.path.join(os.getcwd(),f"../Data/{self.id}.xlsx"))
-TimeTable("../Images/upscaled.png", 1)
+        data.to_excel(os.path.join(os.getcwd(), f"Data/{self.id}.xlsx"))
+        return dataframe
+
+
+if __name__ == "__main__":
+    print("converting tiemtable")
+    TimeTable("{}/Images/test2.png".format(root_path), 1)
+    print("timetable converted")

@@ -1,17 +1,21 @@
 from typing import Union
 import asyncio
 import re
+import time
+import os
 
 import discord
 from discord.ext import commands
 
 from bot_cogs.base.base_cog import BaseCog
+from codes.timetableconverter import TimeTable as TimeTableConverter
 
 valid_image_extensions = ("jpg", "jpeg", "png")
 
 
 class TimeTable(BaseCog):
     @commands.group()
+    @commands.guild_only()
     async def timetable(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send_help("timetable")
@@ -35,9 +39,9 @@ class TimeTable(BaseCog):
                 )
             # stop function from running since DM could not be sent
             return
-        else:
-            if ctx.channel.type != discord.ChannelType.private:
-                await ctx.send("You have been prompted in your DMs.")
+
+        if ctx.channel.type != discord.ChannelType.private:
+            await ctx.send("You have been prompted in your DMs.")
 
         def check(msg: discord.Message):
             return (
@@ -52,12 +56,36 @@ class TimeTable(BaseCog):
         except asyncio.TimeoutError:
             await author.send("You did not send an image on time, the prompt has been cancelled.")
             return
-        else:
-            attachment = received_msg.attachments[0]
+
+        attachment = received_msg.attachments[0]
+        await author.send("Processing the image...")
+
+        try:
+            attachment_path = os.path.join(os.getcwd(), "Images/{}.png".format(attachment.id))
+            attachment_size = await attachment.save(attachment_path)
+        except Exception as error:
             await author.send(
-                "(WIP) You sent {} image(s).\n{}"
-                .format(len(received_msg.attachments), attachment.url)
+                "An unexpected error has occurred. Please try again. (error: {})"
+                .format(error)
             )
+            return
+
+        await author.send("Image saved! Size: {}B".format(attachment_size))
+
+        await author.send("Converting to data...")
+        start_time = time.time()
+        converter = TimeTableConverter(id=attachment.id)
+
+        try:
+            dataframe = await converter.readfile(attachment_path)
+            save_duration = time.time() - start_time
+        except Exception as error:
+            await author.send("Unable to convert to data! Please try again. {}".format(error))
+            return
+        finally:
+            os.remove(attachment_path)
+
+        await author.send("Converted to data! Took {:.3f}s".format(save_duration))
 
     @timetable.command(usage="<name>", enabled=False)
     async def remove(self, ctx: commands.Context, name: str):
