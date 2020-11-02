@@ -1,13 +1,23 @@
 import os
 from datetime import datetime
-
+import time
 import discord
 from discord.ext import commands
-
+from codes import database
 command_prefix = "!"
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 
+##Refresh reminders for the next day
+def refresh(day, guilds):
+    timings = []
+    for x in guilds:
+        times = Db(x.id).getAllEntry()
+        for y in times:
+            if day == y["day"]:
+                y["guildid"] = x
+                timings.append(y)
+        
 
 @bot.event
 async def on_ready():
@@ -24,6 +34,22 @@ async def on_ready():
             type=discord.ActivityType.playing
         )
     )
+    prevday = date.today().weekday()
+    times = refresh(prevday, bot.guilds)
+    try:
+        while True:
+            day = date.today().weekday()
+            timing = f"{time.strftime("%H%M")}"
+            for x in times:
+                if timing == x["time"]:
+                    await bot.get_guild(x["guildid"]).system_channel.send(f"{x["time"]}\n\n{x{"subject"}}")
+            if(day != prevday):
+                times = refresh(day, bot.guilds)
+                prevday = day
+            pass
+    except KeyboardInterrupt:
+        print("Exiting")
+        quit()
 
 @bot.event
 async def on_message(message):
