@@ -41,8 +41,8 @@ class Db:
 
     def findEntry(self, day, subj, time):
         x = self.__collection.find({"day": day, "subject": subj, "time": time})
-        print(x)
-        return x
+        for i in x:
+            print(i)
 
     def deleteSingleEntry(self, subj, day, time):
         # show all entries for discord server
