@@ -3,7 +3,6 @@
 
 import pandas as pd
 import numpy as np
-from tabulate import tabulate
 
 
 def cleanExcel():
@@ -104,9 +103,6 @@ def cleanExcel():
     formatTime()
     replaceCommon()
     removeStrBeforeLessonTypes()
-    print(tabulate(df))
-    print(collectEntry())
+    # print(tabulate(df))
+    # print(collectEntry())
     return collectEntry()
-
-
-cleanExcel()

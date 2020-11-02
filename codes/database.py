@@ -6,25 +6,25 @@ import dataprocess
 cluster = MongoClient(
     "mongodb+srv://NYPCLASSBOT:fatpeepee123@nyp-class-bot.boaao.mongodb.net/class-links?retryWrites=true&w=majority"
 )
-db = cluster["class-links"]
+db = cluster["class_links"]
 
 
 class Db:
     def __init__(self, guildId):
-        self.__guildId = guildId
-        self.__collection = db[self.__guildId]
+        self.guildId = guildId
+        self.collection = db[guildId]
 
-        def delSelf(guildId):
-            db.self.__collection.remove(guildId)
+    def delSelf(self):
+        db.self.collection.remove(self.guildId)
 
     def insertEntry(self, subj, day, time):
         post = {"day": day, "time": time, "subject": subj}
-        self.__collection.insert_one(post)
+        self.collection.insert_one(post)
         print("Entry is inserted.")
         return "Entry is inserted."
 
     def insertManyEntry(self, arrayOfPosts):
-        db.self.__collection.insertMany(arrayOfPosts)
+        self.collection.insert_many(arrayOfPosts)
         print("Entries have been inserted.")
 
     # inserting multiple entry
@@ -32,7 +32,7 @@ class Db:
     # collection.insert_many([post, post2])
 
     def updateEntry(self, subj, day, time, newField, newValue):
-        self.__collection.update_one(
+        self.collection.update_one(
             {"day": day, "time": time, "subject": subj},
             {"$set": {newField: newValue}},
         )
@@ -40,14 +40,14 @@ class Db:
         return "Entry has been updated "
 
     def findEntry(self, day, subj, time):
-        x = self.__collection.find({"day": day, "subject": subj, "time": time})
+        x = self.collection.find({"day": day, "subject": subj, "time": time})
         for i in x:
             print(i)
 
     def deleteSingleEntry(self, subj, day, time):
         # show all entries for discord server
         # from the entry data, enter criterias for it to be deleted.
-        self.__collection.delete_one(
+        self.collection.delete_one(
             {
                 "day": day,
                 "time": time,
@@ -56,3 +56,14 @@ class Db:
         )
         print("Entry has been deleted.")
         return "Entry has been deleted."
+
+    def getAllEntry(self):
+        x = self.collection.find()
+        for i in x:
+            print(i)
+
+
+# testing
+# x = Db("class_1")
+# x.insertManyEntry(dataprocess.cleanExcel())
+# x.getAllEntry()
