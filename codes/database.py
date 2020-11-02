@@ -39,6 +39,11 @@ class Db:
         print("Entry has been updated.")
         return "Entry has been updated "
 
+    def findEntry(self, day, subj, time):
+        x = self.__collection.find({"day": day, "subject": subj, "time": time})
+        print(x)
+        return x
+
     def deleteSingleEntry(self, subj, day, time):
         # show all entries for discord server
         # from the entry data, enter criterias for it to be deleted.

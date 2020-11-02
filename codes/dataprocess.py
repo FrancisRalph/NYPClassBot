@@ -105,4 +105,8 @@ def cleanExcel():
     replaceCommon()
     removeStrBeforeLessonTypes()
     print(tabulate(df))
+    print(collectEntry())
     return collectEntry()
+
+
+cleanExcel()
