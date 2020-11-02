@@ -58,12 +58,15 @@ class Db:
         return "Entry has been deleted."
 
     def getAllEntry(self):
+        entries = []
         x = self.collection.find()
         for i in x:
-            print(i)
+            entries.append(i)
+        return entries
 
 
 # testing
 # x = Db("class_1")
 # x.insertManyEntry(dataprocess.cleanExcel())
-# x.getAllEntry()
+# i = x.getAllEntry()
+# print(i)
