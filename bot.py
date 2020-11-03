@@ -39,10 +39,10 @@ async def on_ready():
     try:
         while True:
             day = date.today().weekday()
-            timing = f"{time.strftime("%H%M")}"
+            timing = f"{time.strftime('%H%M')}"
             for x in times:
                 if timing == x["time"]:
-                    await bot.get_guild(x["guildid"]).system_channel.send(f"{x["time"]}\n\n{x{"subject"}}")
+                    await bot.get_guild(x["guildid"]).system_channel.send(f"{x['time']}\n\n{x['subject']}")
             if(day != prevday):
                 times = refresh(day, bot.guilds)
                 prevday = day
