@@ -3,7 +3,9 @@ from datetime import datetime
 import time
 import discord
 from discord.ext import commands
-from codes import database
+
+from codes.database import Db
+
 command_prefix = "!"
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
@@ -34,11 +36,11 @@ async def on_ready():
             type=discord.ActivityType.playing
         )
     )
-    prevday = date.today().weekday()
+    prevday = datetime.today().weekday()
     times = refresh(prevday, bot.guilds)
     try:
         while True:
-            day = date.today().weekday()
+            day = datetime.today().weekday()
             timing = f"{time.strftime('%H%M')}"
             for x in times:
                 if timing == x["time"]:

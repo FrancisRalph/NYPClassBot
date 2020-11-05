@@ -1,7 +1,7 @@
 import pymongo
 from pymongo import MongoClient
 import tabulate
-import dataprocess
+from codes import dataprocess
 
 cluster = MongoClient(
     "mongodb+srv://NYPCLASSBOT:fatpeepee123@nyp-class-bot.boaao.mongodb.net/class-links?retryWrites=true&w=majority"

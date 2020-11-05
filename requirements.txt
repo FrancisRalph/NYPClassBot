@@ -31,4 +31,5 @@ discord.py==1.5.1
 opencv-contrib-python==4.4.0.44 
 pymongo==3.11.0
 tabulate==0.8.7
-xlrd==1.2.0 
+xlrd==1.2.0
+dnspython==2.0.0
