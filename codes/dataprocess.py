@@ -110,3 +110,9 @@ def cleanData(df):
     # print(tabulate(df))
     # print(collectEntry())
     return collectEntry(), tabulate(df)
+
+
+if __name__ == "__main__":
+    testDf = pd.read_excel("1.xlsx", index_col=[0])
+    entries, data = cleanData(testDf)
+    print(data)
