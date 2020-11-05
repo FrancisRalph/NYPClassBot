@@ -105,4 +105,4 @@ def cleanExcel():
     removeStrBeforeLessonTypes()
     # print(tabulate(df))
     # print(collectEntry())
-    return collectEntry()
+    return collectEntry(), tabulate(df)
