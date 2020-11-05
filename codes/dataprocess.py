@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+from tabulate import tabulate
 
 
 def cleanExcel():
