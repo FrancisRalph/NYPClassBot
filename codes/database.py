@@ -70,3 +70,9 @@ class Db:
 # x.insertManyEntry(dataprocess.cleanExcel())
 # i = x.getAllEntry()
 # print(i)
+
+if __name__ == "__main__":
+    # testing stuff
+    data = Db("class_1")
+    print(data.getAllEntry())
+

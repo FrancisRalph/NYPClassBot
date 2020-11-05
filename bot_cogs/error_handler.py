@@ -16,6 +16,8 @@ class ErrorHandler(BaseCog):
             await ctx.send_help(ctx.command)
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send("Command is disabled as it is work in progress.")
+        else:
+            raise error
 
 
 def setup(bot: commands.Bot):

@@ -37,20 +37,22 @@ def sort_contours(cnts, method="left-to-right"):
 class TimeTable():
     def __init__(self, image : str = "", id: int = 0):
         self.id = id
+        self.progress = 0
         if image == "":
             print("Error, No Image was given.")
 
-    async def readfile(self, image):
+    def readfile(self, image):
+        self.progress = 0
         self.img = cv2.imread(image, 0)
 
         #thresholding the image to a binary image
         thresh,img_bin = cv2.threshold(self.img, 128,255, cv2.THRESH_BINARY |cv2.THRESH_OTSU)
-        #inverting the image 
+        #inverting the image
         img_bin = 255-img_bin
 
         # Length(width) of kernel as 100th of total width
         kernel_len = np.array(self.img).shape[1]//100
-        # Defining a vertical kernel to detect all vertical lines of image 
+        # Defining a vertical kernel to detect all vertical lines of image
         ver_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, kernel_len))
         # Defining a horizontal kernel to detect all horizontal lines of image
         hor_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_len, 1))
@@ -83,7 +85,7 @@ class TimeTable():
         #Get mean of heights
         mean = np.mean(heights)
 
-        #Create list box to store all boxes in  
+        #Create list box to store all boxes in
         box = []
         # Get position (x,y), width and height for every contour and show the contour on image
         for c in contours:
@@ -138,40 +140,41 @@ class TimeTable():
                 lis[indexing].append(row[i][j])
             finalboxes.append(lis)
 
-            #from every single image-based cell/box the strings are extracted via pytesseract and stored in a list
-            outer=[]
-            for i in range(len(finalboxes)):
-                for j in range(len(finalboxes[i])):
-                    inner=''
-                    if(len(finalboxes[i][j])==0):
-                        outer.append(' ')
-                    else:
-                        for k in range(len(finalboxes[i][j])):
-                            y,x,w,h = finalboxes[i][j][k][0],finalboxes[i][j][k][1], finalboxes[i][j][k][2],finalboxes[i][j][k][3]
-                            finalimg = bitnot[x:x+h, y:y+w]
-                            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-                            border = cv2.copyMakeBorder(finalimg,2,2,2,2,   cv2.BORDER_CONSTANT,value=[255,255])
-                            resizing = cv2.resize(border, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-                            dilation = cv2.dilate(resizing, kernel,iterations=1)
-                            erosion = cv2.erode(dilation, kernel,iterations=1)
-                            
-                            out = pytesseract.image_to_string(erosion)
-                            if(len(out)==0):
-                                out = pytesseract.image_to_string(erosion, config='--psm 3')
-                            inner = inner +" "+ out
-                        outer.append(inner)
-            
+        #from every single image-based cell/box the strings are extracted via pytesseract and stored in a list
+        outer=[]
+        for i in range(len(finalboxes)):
+            for j in range(len(finalboxes[i])):
+                inner=''
+                if(len(finalboxes[i][j])==0):
+                    outer.append(' ')
+                else:
+                    for k in range(len(finalboxes[i][j])):
+                        y,x,w,h = finalboxes[i][j][k][0],finalboxes[i][j][k][1], finalboxes[i][j][k][2],finalboxes[i][j][k][3]
+                        finalimg = bitnot[x:x+h, y:y+w]
+                        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+                        border = cv2.copyMakeBorder(finalimg,2,2,2,2,   cv2.BORDER_CONSTANT,value=[255,255])
+                        resizing = cv2.resize(border, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+                        dilation = cv2.dilate(resizing, kernel,iterations=1)
+                        erosion = cv2.erode(dilation, kernel,iterations=1)
+
+                        out = pytesseract.image_to_string(erosion)
+                        if(len(out)==0):
+                            out = pytesseract.image_to_string(erosion, config='--psm 3')
+                        inner = inner +" "+ out
+                    outer.append(inner)
+                self.progress = i/len(finalboxes) + 1/len(finalboxes) * ((j + 1) / len(finalboxes[i]))
+
         #Creating a dataframe of the generated OCR list
         arr = np.array(outer)
         dataframe = pd.DataFrame(arr.reshape(len(row),countcol))
         dataframe = dataframe.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
-        data.to_excel(os.path.join(os.getcwd(), f"Data/{self.id}.xlsx"))
+        #data.to_excel(os.path.join(os.getcwd(), f"Data/{self.id}.xlsx"))
         return dataframe
 
 
 if __name__ == "__main__":
     print("converting tiemtable")
-    TimeTable("{}/Images/test2.png".format(root_path), 1)
+    TimeTable("{}/Images/test2.png".format(os.getcwd()), 1)
     print("timetable converted")
