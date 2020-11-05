@@ -6,10 +6,10 @@ import numpy as np
 from tabulate import tabulate
 
 
-def cleanExcel():
+def cleanData(df):
     # data precleaning ======================================
     # removes any unwanted unamed columns
-    df = pd.read_excel("1.xlsx", index_col=[0])
+    # df = pd.read_excel("1.xlsx", index_col=[0])
     # removes all the \n & and \x0c thingies
     df = df.replace(r"\\n", " ", regex=True)
     df = df.replace(r"\\x0c", " ", regex=True)
@@ -94,8 +94,11 @@ def cleanExcel():
     lastCol = df.columns[-1]
     x = df[lastCol][1:].sum()
     print(x)
-    if x.strip() == "":
-        df = df[df.columns[:-1]]
+    try:
+        if x.strip() == "":
+            df = df[df.columns[:-1]]
+    except:
+        print("shit happens here, fix your x line 97 of dataprocess.py")
 
     # output to csv, please include path
     # added this into a giant function cos the code needs to be ran sequentially
