@@ -35,9 +35,10 @@ def sort_contours(cnts, method="left-to-right"):
     return (cnts, boundingBoxes)
 
 class TimeTable():
-    def __init__(self, image : str = "", id: int = 0):
+    def __init__(self, image : str = "", id: int = 0, debug = False):
         self.id = id
         self.progress = 0
+        self.debug = debug
         if image == "":
             print("Error, No Image was given.")
 
@@ -46,7 +47,7 @@ class TimeTable():
         self.img = cv2.imread(image, 0)
 
         #thresholding the image to a binary image
-        thresh,img_bin = cv2.threshold(self.img, 128,255, cv2.THRESH_BINARY |cv2.THRESH_OTSU)
+        img_bin = cv2.adaptiveThreshold(self.img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
         #inverting the image
         img_bin = 255-img_bin
 
@@ -169,7 +170,8 @@ class TimeTable():
         dataframe = pd.DataFrame(arr.reshape(len(row),countcol))
         dataframe = dataframe.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         # save df to pickle for debugging later
-        dataframe.to_pickle(os.path.join(os.getcwd(), "Data/{}.pkl".format(self.id)))
+        if self.debug:
+            dataframe.to_pickle(os.path.join(os.getcwd(), "Data/{}.pkl".format(self.id)))
         #data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
         #data.to_excel(os.path.join(os.getcwd(), f"Data/{self.id}.xlsx"))

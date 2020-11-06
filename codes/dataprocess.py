@@ -118,7 +118,17 @@ def cleanData(df):
 
 if __name__ == "__main__":
     # testDf = pd.read_excel("1.xlsx", index_col=[0])
-    testDf: pd.DataFrame = pd.read_pickle("../Data/774145976797233172.pkl")
+
+    # testDf: pd.DataFrame = pd.read_pickle("../Data/774154455770857512.pkl")
+    # testDf.drop(columns=[3, 4, 6, 10], inplace=True)
+    # testDf.rename(columns={
+    #     5: 3,
+    #     7: 4,
+    #     8: 5,
+    #     9: 6
+    # }, inplace=True)
+
+    testDf: pd.DataFrame = pd.read_pickle("../Data/774148122645364736.pkl")
     print(testDf.to_string())
 
     entries, data = cleanData(testDf)

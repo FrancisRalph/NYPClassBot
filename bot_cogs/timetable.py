@@ -76,7 +76,7 @@ class TimeTable(BaseCog):
 
         convert_message = await author.send("Converting to data...")
         start_time = time.time()
-        converter = TimeTableConverter(id=attachment.id)
+        converter = TimeTableConverter(id=attachment.id, debug=False)
 
         last_tracked = 0
         last_percentage = 0
@@ -88,9 +88,10 @@ class TimeTable(BaseCog):
                 last_tracked = time.time()
 
             time_since_last_tracked = time.time() - last_tracked
-            if time_since_last_tracked > 0:
-                current_percentage = converter.progress
-                percentage_gain = current_percentage - last_percentage
+            current_percentage = converter.progress
+            percentage_gain = current_percentage - last_percentage
+
+            if time_since_last_tracked > 0 and percentage_gain > 0:
                 rate = percentage_gain / time_since_last_tracked
                 time_left = (1 - current_percentage) / rate
                 time_left_str = str(round(time_left, 2)) + "s"
