@@ -168,7 +168,9 @@ class TimeTable():
         arr = np.array(outer)
         dataframe = pd.DataFrame(arr.reshape(len(row),countcol))
         dataframe = dataframe.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-        data = dataframe.style.set_properties(align="left")
+        # save df to pickle for debugging later
+        dataframe.to_pickle(os.path.join(os.getcwd(), "Data/{}.pkl".format(self.id)))
+        #data = dataframe.style.set_properties(align="left")
         #Converting it in a excel-file
         #data.to_excel(os.path.join(os.getcwd(), f"Data/{self.id}.xlsx"))
         return dataframe

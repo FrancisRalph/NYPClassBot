@@ -81,7 +81,11 @@ def cleanData(df):
                 post = {"day": "", "time": "", "subject": ""}
                 post["day"] = days_to_number[df[colNo][0]]
                 post["time"] = df[0][rowNo]
-                post["subject"] = df[colNo][rowNo].strip()
+                print(colNo, rowNo, df[colNo][rowNo], type(df[colNo][rowNo]))
+                if type(df[colNo][rowNo]) == str:
+                    post["subject"] = df[colNo][rowNo].strip()
+                else:
+                    post["subject"] = "nan"
                 if post["subject"] == "":
                     continue
                 else:
@@ -113,6 +117,10 @@ def cleanData(df):
 
 
 if __name__ == "__main__":
-    testDf = pd.read_excel("1.xlsx", index_col=[0])
+    # testDf = pd.read_excel("1.xlsx", index_col=[0])
+    testDf: pd.DataFrame = pd.read_pickle("../Data/774145976797233172.pkl")
+    print(testDf.to_string())
+
     entries, data = cleanData(testDf)
     print(data)
+

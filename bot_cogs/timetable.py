@@ -1,9 +1,9 @@
 from typing import Union
 import asyncio
-import threading
 import re
 import time
 import os
+import traceback
 
 import discord
 from discord.ext import commands, tasks
@@ -60,7 +60,7 @@ class TimeTable(BaseCog):
             return
 
         attachment = received_msg.attachments[0]
-        progress_message = await author.send("Processing the image...")
+        progress_message = await author.send("Saving the image...")
 
         try:
             attachment_path = os.path.join(os.getcwd(), "Images/{}.png".format(attachment.id))
@@ -78,9 +78,31 @@ class TimeTable(BaseCog):
         start_time = time.time()
         converter = TimeTableConverter(id=attachment.id)
 
+        last_tracked = 0
+        last_percentage = 0
+
         @tasks.loop(seconds=3)
         async def edit_msg_loop():
-            await convert_message.edit(content="Converting to data... {:.2f}%".format(converter.progress * 100))
+            nonlocal last_tracked
+            if last_tracked == 0:
+                last_tracked = time.time()
+
+            time_since_last_tracked = time.time() - last_tracked
+            if time_since_last_tracked > 0:
+                current_percentage = converter.progress
+                percentage_gain = current_percentage - last_percentage
+                rate = percentage_gain / time_since_last_tracked
+                time_left = (1 - current_percentage) / rate
+                time_left_str = str(round(time_left, 2)) + "s"
+            else:
+                time_left_str = "N/A"
+
+            await convert_message.edit(
+                content=(
+                    "Converting to data... {:.2f}% (est. time left: {})"
+                    .format(converter.progress * 100, time_left_str)
+                )
+            )
 
         @edit_msg_loop.after_loop
         async def edit_msg_end():
@@ -97,6 +119,7 @@ class TimeTable(BaseCog):
             dataframe = await read()
             edit_msg_loop.cancel()
         except Exception as error:
+            traceback.print_tb(error.__traceback__)
             await author.send("Unable to convert to data! Please try again. {}".format(error))
             return
         finally:
@@ -105,6 +128,7 @@ class TimeTable(BaseCog):
         try:
             clean_data, tabulated_data = dataprocess.cleanData(dataframe)
         except Exception as error:
+            traceback.print_tb(error.__traceback__)
             await author.send("Unable to clean data! Please try again. {}".format(error))
             return
 
