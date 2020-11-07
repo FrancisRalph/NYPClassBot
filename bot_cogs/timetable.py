@@ -77,10 +77,14 @@ class TimeTable(BaseCog):
         convert_message = await author.send("Converting to data...")
         start_time = time.time()
         converter = TimeTableConverter(id=attachment.id, debug=False)
+        # ^debug param toggles saving of df to pickle for debugging later
 
         last_tracked = 0
         last_percentage = 0
 
+        # every 3 seconds, update progress percentage
+        # progress is determined by convert.progress which is incremented
+        # in the for loop in converter.read_file() that converts the text from the image
         @tasks.loop(seconds=3)
         async def edit_msg_loop():
             nonlocal last_tracked
@@ -105,18 +109,21 @@ class TimeTable(BaseCog):
                 )
             )
 
+        # once loop is over, set final message of time taken
         @edit_msg_loop.after_loop
         async def edit_msg_end():
             save_duration = time.time() - start_time
             await convert_message.edit(content="Converted to data! Took {:.3f}s".format(save_duration))
 
+        # this runs converter.readfile "concurrently" on a separate thread
+        # making convert.readfile an async func (coroutine) does not actually
+        # make it run on a separate thread since it does not have an await
+        async def read():
+            loop = asyncio.get_running_loop()
+            return await loop.run_in_executor(None, converter.readfile, attachment_path)
+
         try:
             edit_msg_loop.start()
-
-            async def read():
-                loop = asyncio.get_running_loop()
-                return await loop.run_in_executor(None, converter.readfile, attachment_path)
-
             dataframe = await read()
             edit_msg_loop.cancel()
         except Exception as error:
@@ -139,7 +146,7 @@ class TimeTable(BaseCog):
     async def remove(self, ctx: commands.Context, name: str):
         pass
 
-    @timetable.command(usage="<name>", enabled=False)
+    @timetable.command(usage="", enabled=False)
     async def list(self, ctx: commands.Context):
         pass
     
