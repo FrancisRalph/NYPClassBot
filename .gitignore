@@ -5,3 +5,4 @@
 /models
 /Tesseract-OCR
 /.vscode
+*/__pycache__/*
