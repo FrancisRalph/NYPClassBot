@@ -19,6 +19,7 @@ def refresh(day, guilds):
             if day == y["day"]:
                 y["guildid"] = x
                 timings.append(y)
+    return timings
         
 
 @bot.event
