@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 import time
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from codes.database import Db
 
@@ -10,17 +10,8 @@ command_prefix = "!"
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 
-##Refresh reminders for the next day
-def refresh(day, guilds):
-    timings = []
-    for x in guilds:
-        times = Db(x.id).getAllEntry()
-        for y in times:
-            if day == y["day"]:
-                y["guildid"] = x
-                timings.append(y)
-    return timings
-        
+
+
 
 @bot.event
 async def on_ready():
@@ -37,29 +28,52 @@ async def on_ready():
             type=discord.ActivityType.playing
         )
     )
-    prevday = datetime.today().weekday()
-    times = refresh(prevday, bot.guilds)
-    try:
-        while True:
-            day = datetime.today().weekday()
-            timing = f"{time.strftime('%H%M')}"
-            for x in times:
-                if timing == x["time"]:
-                    await bot.get_guild(x["guildid"]).system_channel.send(f"{x['time']}\n\n{x['subject']}")
-            if(day != prevday):
-                times = refresh(day, bot.guilds)
-                prevday = day
-            pass
-    except KeyboardInterrupt:
-        print("Exiting")
-        quit()
-
+    reminder.start()
 @bot.event
 async def on_message(message):
     if message.author.bot:
         return
 
     await bot.process_commands(message)
+
+timings = []
+day = -1
+prevday = -1
+@tasks.loop(seconds=1.0)
+async def reminder():
+    global day
+    global timings
+    global prevday
+
+    day = datetime.today().weekday()
+    timing = f"{time.strftime('%H%M')}"
+    for x in timings:
+        if timing == x["time"]:
+            print("Reminder Alert")
+            await bot.get_guild(x["guildid"]).system_channel.send(f"{x['time']}\n\n{x['subject']}")
+            print("Message Sent")
+            timings.remove(x)
+    if(day != prevday):
+        await refresh(day)
+        prevday = day
+
+@reminder.before_loop
+async def reminder_pre():
+    global prevday
+    prevday = datetime.today().weekday()
+    await refresh(prevday)
+    await bot.wait_until_ready()
+    print("Reminder setted up")        
+async def refresh(day):
+    global timings
+    timings = []
+    for x in bot.guilds:
+        times = Db(x.id)
+        times = times.getAllEntry()
+        for y in times:
+            if day == y["day"]:
+                y["guildid"] = x.id
+                timings.append(y)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,9 @@ db = cluster["class_links"]
 class Db:
     def __init__(self, guildId):
         self.guildId = guildId
-        self.collection = db[guildId]
+        # self.collection = db[str(guildId)]
+        self.collection = db["class_1"] 
+        # Remove this^^ after creation of cluster from timetable is created
 
     def delSelf(self):
         db.self.collection.remove(self.guildId)
@@ -65,11 +67,6 @@ class Db:
         return entries
 
 
-# testing
-# x = Db("class_1")
-# x.insertManyEntry(dataprocess.cleanExcel())
-# i = x.getAllEntry()
-# print(i)
 
 if __name__ == "__main__":
     # testing stuff

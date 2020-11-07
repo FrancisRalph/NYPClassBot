@@ -4,13 +4,13 @@ import re
 import time
 import os
 import traceback
-
+from datetime import datetime
 import discord
 from discord.ext import commands, tasks
 
 from bot_cogs.base.base_cog import BaseCog
 from codes.timetableconverter import TimeTable as TimeTableConverter
-from codes import dataprocess
+from codes import dataprocess, database
 
 valid_image_extensions = ("jpg", "jpeg", "png")
 
@@ -142,7 +142,7 @@ class TimeTable(BaseCog):
     @timetable.command(usage="<name>", enabled=False)
     async def list(self, ctx: commands.Context):
         pass
-
-
+    
 def setup(bot: commands.Bot):
     bot.add_cog(TimeTable(bot))
+    
