@@ -46,7 +46,7 @@ async def reminder():
     global prevday
 
     day = datetime.today().weekday()
-    timing = f"{time.strftime('%H%M')}"
+    timing = f"{time.strftime('%H%M', time.gmtime(time.time() + 8*60*60))}"
     for x in timings:
         if timing == x["time"]:
             print("Reminder Alert")
