@@ -2,7 +2,6 @@
 /Images/*.png
 /Data/*.xlsx
 /input
-/models
 /Tesseract-OCR
 /.vscode
 */__pycache__/*
