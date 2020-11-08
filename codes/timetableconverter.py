@@ -62,9 +62,10 @@ class TimeTable:
         # second param is the scale of the model, scale of the model is in the name of the file of the model
         sr.setModel("espcn", 4)
         image = sr.upsample(upscaleImg)
+        cv2.imwrite(png, image)
         ################################################
         ################################################
-        self.img = cv2.imread(image, 0)
+        self.img = cv2.imread(png, 0)
 
         # thresholding the image to a binary image
         img_bin = cv2.adaptiveThreshold(

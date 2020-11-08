@@ -76,7 +76,7 @@ class TimeTable(BaseCog):
 
         convert_message = await author.send("Converting to data...")
         start_time = time.time()
-        converter = TimeTableConverter(id=attachment.id, debug=False)
+        converter = TimeTableConverter(image = attachment_path, id=attachment.id, debug=False)
         # ^debug param toggles saving of df to pickle for debugging later
 
         last_tracked = 0
