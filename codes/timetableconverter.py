@@ -56,7 +56,7 @@ class TimeTable:
         sr = dnn_superres.DnnSuperResImpl_create()
         upscaleImg = cv2.imread(png)
         # change path to change model
-        path = os.path.join(os.getcwd(), "models/ESPCN_x4.pb")
+        path = os.path.join(os.getcwd(), "/models/ESPCN_x4.pb")
         sr.readModel(path)
         # first param is the name of the model
         # second param is the scale of the model, scale of the model is in the name of the file of the model
