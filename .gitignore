@@ -1,7 +1,9 @@
 /env
-/Images/*.png
+/images/*.png
 /Data/*.xlsx
 /input
 /Tesseract-OCR
 /.vscode
+/testenv
+/excel
 */__pycache__/*
