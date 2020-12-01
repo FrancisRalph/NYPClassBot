@@ -1,7 +1,6 @@
 import pymongo
 from pymongo import MongoClient
 import tabulate
-from modules import dataprocess
 
 cluster = MongoClient(
     "mongodb+srv://NYPCLASSBOT:fatpeepee123@nyp-class-bot.boaao.mongodb.net/class-links?retryWrites=true&w=majority"
@@ -13,7 +12,7 @@ class Db:
     def __init__(self, guildId):
         self.guildId = guildId
         # self.collection = db[str(guildId)]
-        self.collection = db["class_1"]
+        self.collection = db[guildId]
         # Remove this^^ after creation of cluster from timetable is created
 
     def delSelf(self):
@@ -66,8 +65,3 @@ class Db:
             entries.append(i)
         return entries
 
-
-if __name__ == "__main__":
-    # testing stuff
-    data = Db("class_1")
-    print(data.getAllEntry())

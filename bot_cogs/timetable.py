@@ -9,11 +9,8 @@ import discord
 from discord.ext import commands, tasks
 import shutil
 import requests
-
 from bot_cogs.base.base_cog import BaseCog
-from modules import dataprocess, database, upscaler, timetableconverter
-
-
+from modules import dataprocess, upscaler, timetableconverter, database
 class TimeTable(BaseCog):
     @commands.group()
     # @commands.guild_only()
@@ -58,36 +55,51 @@ class TimeTable(BaseCog):
                 "You did not send an image on time, the prompt has been cancelled."
             )
             return
-
+        guildId = ctx.guild.id
+        guildId = f"{guildId}_{name}"
+        # paths for input and output
+        imagePath = os.path.join(os.getcwd(), f"images/{guildId}.png")
+        excelPath = os.path.join(os.getcwd(), f"excel/{guildId}.xlsx")
         try:
             url = msg.attachments[0].url
         except IndexError:
             print("Invalid image.")
             await author.send("Invalid image.")
             return
+
+
         if url[0:26] == "https://cdn.discordapp.com":
             await author.send("Processing image...")
             r = requests.get(url, stream=True)
-            path = os.path.join(os.getcwd(), "images/")
-            guildid = ctx.guild.id
-            imagePath = path + str(guildid) + ".png"
             with open(imagePath, "wb") as out_file:
                 print("saving image: " + imagePath)
                 shutil.copyfileobj(r.raw, out_file)
-        await ctx.send("File saved, upscaling now.")
+        await author.send("File saved, upscaling now.")
         #############################################
-        upscaler.upscale(imagePath, guildid)
-        await ctx.send("Upscaling finished, converting to excel now.")
+        upscaler.upscale(imagePath, guildId)
+        await author.send("Upscaling finished, converting to excel now.")
         ###############converting xlxs#################
-        inputpath = os.path.join(os.getcwd(), f"images/{guildid}.png")
         try:
-            timetableconverter.readfile(inputpath, guildid)
+            timetableconverter.readfile(imagePath, guildId)
         except Exception as e:
             print(e.__traceback__)
+        await author.send("File converted to excel, cleaning file.")
         ###############cleaning xlxs#################
-        await ctx.send("File converted to excel, cleaning file.")
-        excelpath = os.path.join(os.getcwd(), f"excel/{guildid}.xlsx")
-        dataprocess.cleanData(excelpath, guildid)
+        array_of_entries = (dataprocess.cleanData(excelPath, guildId))[0]
+        await author.send("File has been cleaned, adding to database.")
+        #############inserting to db#################
+        db = database.Db(f"{guildId}")
+        await author.send("Database has been created.")
+        db.insertManyEntry(array_of_entries)
+        await author.send("Collection has been inserted.")
+        try:
+            os.remove(imagePath)
+            os.remove(excelPath)
+        except Exception as e:
+            print(e.__traceback__)
+
+            
+
 
     #     def check(msg: discord.Message):
     #         return (
@@ -186,13 +198,27 @@ class TimeTable(BaseCog):
 
     #     await author.send("```\n{}\n```".format(tabulated_data[:900]))
 
-    # @timetable.command(usage="<name>", enabled=False)
-    # async def remove(self, ctx: commands.Context, name: str):
-    #     pass
+    @timetable.command(usage="<name>", enabled=True)
+    async def remove(self, ctx: commands.Context, name: str):
+        guildId = ctx.guild.id
+        guildcollections = [x.split("_")[1] for x in database.db.list_collection_names() if x.startswith(str(guildId))]
+        if name not in guildcollections:
+            await ctx.send("Timetable does not exist.")
+        else:
+            removal = database.db[f"{guildId}_{name}"]
+            removal.drop()
+            await ctx.send(f"{name} has been removed")
 
-    # @timetable.command(usage="", enabled=False)
-    # async def list(self, ctx: commands.Context):
-    #     pass
+    @timetable.command(usage="peepeepoopoo", enabled=True)
+    async def list(self, ctx: commands.Context):
+        guildId = ctx.guild.id
+        message = [x for x in database.db.list_collection_names() if x.startswith(str(guildId))]
+        output = ""
+        for x in range(len(message)):
+            y = message[x].split("_")[1]
+            output += f"{x+1}. {y}\n" 
+        await ctx.send(output)
+    
 
 
 def setup(bot: commands.Bot):

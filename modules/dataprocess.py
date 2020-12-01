@@ -44,8 +44,22 @@ def cleanData(path, guildId):
     # this code looks like shit, but it works
     # formats the timing
     def formatTime():
+        timeslots = [
+            "0900",
+            "1000",
+            "1100",
+            "1200",
+            "1300",
+            "1400",
+            "1500",
+            "1600",
+            "1700",
+            "1800",
+            "1900",
+            "2000",
+        ]
         for x in range(1, len(df[0])):
-            df[0][x] = df[0][x][:4]
+            df[0][x] = timeslots[x-1]
         print("Format completed.")
         # print(df[0])
 
@@ -108,7 +122,7 @@ def cleanData(path, guildId):
     # output to csv, please include path
     # added this into a giant function cos the code needs to be ran sequentially
     # df.to_excel(path of file)
-    path = os.path.join(os.getcwd(), f"excel/{guildId}cleaned.xlsx")
+    path = os.path.join(os.getcwd(), f"excel/{guildId}.xlsx")
     formatTime()
     replaceCommon()
     removeStrBeforeLessonTypes()
@@ -118,6 +132,6 @@ def cleanData(path, guildId):
     return collectEntry(), tabulate(df)
 
 
-# guildid = "769097949514563594"
+# guildid = "769097949514563594_timetable3"
 # excelpath = os.path.join(os.getcwd(), f"excel\\{guildid}.xlsx")
-# cleanData(excelpath, guildid)
+# print(cleanData(excelpath, guildid)[0])

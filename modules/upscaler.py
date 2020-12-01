@@ -9,19 +9,18 @@ start_time = time.time()
 def upscale(path, guildId):
     start_time = time.time()
     sr = dnn_superres.DnnSuperResImpl_create()
-    image = cv2.imread(path)
+    image_path = cv2.imread(path)
 
     # change path to change model
-    path = os.path.join(os.getcwd(), "models/EDSR_x3.pb")
-    sr.readModel(path)
+    model_path = os.path.join(os.getcwd(), "models/EDSR_x3.pb")
+    sr.readModel(model_path)
 
     # first param is the name of the model
     # second param is the scale of the model, scale of the model is in the name of the file of the model
     sr.setModel("edsr", 3)
 
-    result = sr.upsample(image)
-    imgpath = str(os.path.join(os.getcwd(), "upscaled/")) + str(guildId) + ".png"
-    cv2.imwrite(imgpath, result)
+    result = sr.upsample(image_path)
+    cv2.imwrite(path, result)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
