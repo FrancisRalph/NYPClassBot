@@ -40,8 +40,8 @@ def sort_contours(cnts, method="left-to-right"):
     return (cnts, boundingBoxes)
 
 
-def readfile(image, guildId):
-    img = cv2.imread(image, 0)
+def readfile(image_path, excel_output_path):
+    img = cv2.imread(image_path, 0)
 
     # thresholding the image to a binary image
     img_bin = cv2.adaptiveThreshold(
@@ -93,7 +93,7 @@ def readfile(image, guildId):
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         if w < 1000 and h < 500:
-            image = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            image_path = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
             box.append([x, y, w, h])
 
     # Creating two lists to define row and column in which cell is located
@@ -190,7 +190,7 @@ def readfile(image, guildId):
     # save df to pickle for debugging later
     data = dataframe.style.set_properties(align="left")
     # Converting it in a excel-file
-    data.to_excel(os.path.join(os.getcwd(), f"excel/{guildId}.xlsx"))
+    data.to_excel(excel_output_path, engine='xlsxwriter')
     return
 
 # readfile(os.path.join(os.getcwd(),"images\\769097949514563594.png"), "769097949514563594")

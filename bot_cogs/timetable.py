@@ -1,16 +1,38 @@
+# built-in modules
 from typing import Union
 import asyncio
 import re
-import time
 import os
-import traceback
-from datetime import datetime
+
+# other modules
 import discord
 from discord.ext import commands, tasks
-import shutil
-import requests
 from bot_cogs.base.base_cog import BaseCog
+
+# project modules
 from modules import dataprocess, upscaler, timetableconverter, database
+
+valid_image_extensions = ("jpg", "jpeg", "png")
+max_image_size = 1e6  # in bytes (1MB)
+prompt_duration = 30
+
+
+def extract_name(x: str):
+    match: re.Match = re.search("[^_]+_(.+)", x)
+    if match is not None:
+        return match.group(1)
+    else:
+        print(f"Error extracting timetable name from {x}")
+        return None
+
+
+def asynchronise_func(foo):
+    async def bar(*args):
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, foo, *args)
+    return bar
+
+
 class TimeTable(BaseCog):
     @commands.group()
     # @commands.guild_only()
@@ -43,182 +65,88 @@ class TimeTable(BaseCog):
             await ctx.send("You have been prompted in your DMs.")
 
         def check(msg: discord.Message):
-            return msg.author == author and msg.channel.type == discord.ChannelType.private
+            return (
+                msg.author == author
+                and msg.channel.type == discord.ChannelType.private
+                # check if user sent an attachment
+                and len(msg.attachments) > 0
+                # check if attachment is a valid image
+                and re.search(".+[.](.+)", msg.attachments[0].filename).group(1) in valid_image_extensions
+                # restrict attachment size to prevent long processing time
+            )
 
         try:
-            await author.send("You have 10 seconds to send an image.")
-            msg: discord.Message = await self.bot.wait_for(
-                "message", check=check, timeout=10
+            await author.send(f"You have {prompt_duration} seconds to send an image.")
+            # received_msg variable is used instead of msg
+            # due to the check function using msg as its parameter
+            received_msg: discord.Message = await self.bot.wait_for(
+                "message", check=check, timeout=prompt_duration
             )
         except asyncio.TimeoutError:
             await author.send(
                 "You did not send an image on time, the prompt has been cancelled."
             )
             return
-        guildId = ctx.guild.id
-        guildId = f"{guildId}_{name}"
-        # paths for input and output
-        imagePath = os.path.join(os.getcwd(), f"images/{guildId}.png")
-        excelPath = os.path.join(os.getcwd(), f"excel/{guildId}.xlsx")
-        try:
-            url = msg.attachments[0].url
-        except IndexError:
-            print("Invalid image.")
-            await author.send("Invalid image.")
+
+        image = received_msg.attachments[0]
+        if image.size > max_image_size:
+            await author.send(
+                f"Image is too big. Please send an image with a size less than {max_image_size // 1e6}MB"
+            )
             return
 
+        guild_id = f"{ctx.guild.id}_{name}"
+        # paths for input and output
+        image_path = os.path.join(os.getcwd(), f"images/{guild_id}.png")
+        excel_path = os.path.join(os.getcwd(), f"excel/{guild_id}.xlsx")
 
-        if url[0:26] == "https://cdn.discordapp.com":
-            await author.send("Processing image...")
-            r = requests.get(url, stream=True)
-            with open(imagePath, "wb") as out_file:
-                print("saving image: " + imagePath)
-                shutil.copyfileobj(r.raw, out_file)
+        await image.save(image_path)
         await author.send("File saved, upscaling now.")
-        #############################################
-        upscaler.upscale(imagePath, guildId)
+
+        await asynchronise_func(upscaler.upscale)(image_path, guild_id)
         await author.send("Upscaling finished, converting to excel now.")
-        ###############converting xlxs#################
-        try:
-            timetableconverter.readfile(imagePath, guildId)
-        except Exception as e:
-            print(e.__traceback__)
+
+        # converting xlxs
+        await asynchronise_func(timetableconverter.readfile)(image_path, excel_path)
         await author.send("File converted to excel, cleaning file.")
-        ###############cleaning xlxs#################
-        array_of_entries = (dataprocess.cleanData(excelPath, guildId))[0]
+
+        # cleaning xlxs
+        array_of_entries = (dataprocess.cleanData(excel_path, guild_id))[0]
         await author.send("File has been cleaned, adding to database.")
-        #############inserting to db#################
-        db = database.Db(f"{guildId}")
+
+        # inserting to db
+        db = await asynchronise_func(database.Db)(f"{guild_id}")
         await author.send("Database has been created.")
-        db.insertManyEntry(array_of_entries)
+
+        await asynchronise_func(db.insertManyEntry)(array_of_entries)
         await author.send("Collection has been inserted.")
+
         try:
-            os.remove(imagePath)
-            os.remove(excelPath)
+            os.remove(image_path)
+            os.remove(excel_path)
         except Exception as e:
-            print(e.__traceback__)
-
-            
-
-
-    #     def check(msg: discord.Message):
-    #         return (
-    #             msg.author == author
-    #             and msg.channel.type == discord.ChannelType.private
-    #             and len(msg.attachments) > 0
-    #             and re.search(".+[.](.+)", msg.attachments[0].filename).group(1) in valid_image_extensions
-    #         )
-
-    #     try:
-    #         received_msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=30)
-    #     except asyncio.TimeoutError:
-    #         await author.send("You did not send an image on time, the prompt has been cancelled.")
-    #         return
-
-    #     attachment = received_msg.attachments[0]
-    #     progress_message = await author.send("Saving the image...")
-
-    #     try:
-    #         attachment_path = os.path.join(os.getcwd(), "Images/{}.png".format(attachment.id))
-    #         attachment_size = await attachment.save(attachment_path)
-    #     except Exception as error:
-    #         await author.send(
-    #             "An unexpected error has occurred. Please try again. (error: {})"
-    #             .format(error)
-    #         )
-    #         return
-
-    #     await progress_message.edit(content="Image saved! Size: {}B".format(attachment_size))
-
-    #     convert_message = await author.send("Converting to data...")
-    #     start_time = time.time()
-    #     converter = TimeTableConverter(image = attachment_path, id=attachment.id, debug=False)
-    #     # ^debug param toggles saving of df to pickle for debugging later
-
-    #     last_tracked = 0
-    #     last_percentage = 0
-
-    #     # every 3 seconds, update progress percentage
-    #     # progress is determined by convert.progress which is incremented
-    #     # in the for loop in converter.read_file() that converts the text from the image
-    #     @tasks.loop(seconds=3)
-    #     async def edit_msg_loop():
-    #         nonlocal last_tracked
-    #         if last_tracked == 0:
-    #             last_tracked = time.time()
-
-    #         time_since_last_tracked = time.time() - last_tracked
-    #         current_percentage = converter.progress
-    #         percentage_gain = current_percentage - last_percentage
-
-    #         if time_since_last_tracked > 0 and percentage_gain > 0:
-    #             rate = percentage_gain / time_since_last_tracked
-    #             time_left = (1 - current_percentage) / rate
-    #             time_left_str = str(round(time_left, 2)) + "s"
-    #         else:
-    #             time_left_str = "N/A"
-
-    #         await convert_message.edit(
-    #             content=(
-    #                 "Converting to data... {:.2f}% (est. time left: {})"
-    #                 .format(converter.progress * 100, time_left_str)
-    #             )
-    #         )
-
-    #     # once loop is over, set final message of time taken
-    #     @edit_msg_loop.after_loop
-    #     async def edit_msg_end():
-    #         save_duration = time.time() - start_time
-    #         await convert_message.edit(content="Converted to data! Took {:.3f}s".format(save_duration))
-
-    #     # this runs converter.readfile "concurrently" on a separate thread
-    #     # making convert.readfile an async func (coroutine) does not actually
-    #     # make it run on a separate thread since it does not have an await
-    #     async def read():
-    #         loop = asyncio.get_running_loop()
-    #         return await loop.run_in_executor(None, converter.readfile, attachment_path)
-
-    #     try:
-    #         edit_msg_loop.start()
-    #         dataframe = await read()
-    #         edit_msg_loop.cancel()
-    #     except Exception as error:
-    #         traceback.print_tb(error.__traceback__)
-    #         await author.send("Unable to convert to data! Please try again. {}".format(error))
-    #         return
-    #     finally:
-    #         os.remove(attachment_path)
-
-    #     try:
-    #         clean_data, tabulated_data = dataprocess.cleanData(dataframe)
-    #     except Exception as error:
-    #         traceback.print_tb(error.__traceback__)
-    #         await author.send("Unable to clean data! Please try again. {}".format(error))
-    #         return
-
-    #     await author.send("```\n{}\n```".format(tabulated_data[:900]))
+            print(e, e.__traceback__)
 
     @timetable.command(usage="<name>", enabled=True)
     async def remove(self, ctx: commands.Context, name: str):
-        guildId = ctx.guild.id
-        guildcollections = [x.split("_")[1] for x in database.db.list_collection_names() if x.startswith(str(guildId))]
+        guild_id = ctx.guild.id
+        guildcollections = [extract_name(x) for x in database.db.list_collection_names() if x.startswith(str(guild_id))]
         if name not in guildcollections:
             await ctx.send("Timetable does not exist.")
         else:
-            removal = database.db[f"{guildId}_{name}"]
+            removal = database.db[f"{guild_id}_{name}"]
             removal.drop()
             await ctx.send(f"{name} has been removed")
 
     @timetable.command(usage="peepeepoopoo", enabled=True)
     async def list(self, ctx: commands.Context):
-        guildId = ctx.guild.id
-        message = [x for x in database.db.list_collection_names() if x.startswith(str(guildId))]
+        guild_id = ctx.guild.id
+        message = [x for x in database.db.list_collection_names() if x.startswith(str(guild_id))]
         output = ""
         for x in range(len(message)):
-            y = message[x].split("_")[1]
+            y = extract_name(message[x])
             output += f"{x+1}. {y}\n" 
         await ctx.send(output)
-    
 
 
 def setup(bot: commands.Bot):
