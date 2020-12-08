@@ -8,6 +8,7 @@ import os
 import discord
 from discord.ext import commands, tasks
 from bot_cogs.base.base_cog import BaseCog
+from tabulate import tabulate
 
 # project modules
 from modules import dataprocess, upscaler, timetableconverter, database
@@ -15,6 +16,7 @@ from modules import dataprocess, upscaler, timetableconverter, database
 valid_image_extensions = ("jpg", "jpeg", "png")
 max_image_size = 1e6  # in bytes (1MB)
 prompt_duration = 30
+localpath = os.getcwd()
 
 
 def extract_name(x: str):
@@ -30,6 +32,7 @@ def asynchronise_func(foo):
     async def bar(*args):
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, foo, *args)
+
     return bar
 
 
@@ -71,7 +74,8 @@ class TimeTable(BaseCog):
                 # check if user sent an attachment
                 and len(msg.attachments) > 0
                 # check if attachment is a valid image
-                and re.search(".+[.](.+)", msg.attachments[0].filename).group(1) in valid_image_extensions
+                and re.search(".+[.](.+)", msg.attachments[0].filename).group(1)
+                in valid_image_extensions
                 # restrict attachment size to prevent long processing time
             )
 
@@ -130,7 +134,11 @@ class TimeTable(BaseCog):
     @timetable.command(usage="<name>", enabled=True)
     async def remove(self, ctx: commands.Context, name: str):
         guild_id = ctx.guild.id
-        guildcollections = [extract_name(x) for x in database.db.list_collection_names() if x.startswith(str(guild_id))]
+        guildcollections = [
+            extract_name(x)
+            for x in database.db.list_collection_names()
+            if x.startswith(str(guild_id))
+        ]
         if name not in guildcollections:
             await ctx.send("Timetable does not exist.")
         else:
@@ -141,12 +149,43 @@ class TimeTable(BaseCog):
     @timetable.command(usage="peepeepoopoo", enabled=True)
     async def list(self, ctx: commands.Context):
         guild_id = ctx.guild.id
-        message = [x for x in database.db.list_collection_names() if x.startswith(str(guild_id))]
+        message = [
+            x
+            for x in database.db.list_collection_names()
+            if x.startswith(str(guild_id))
+        ]
         output = ""
         for x in range(len(message)):
             y = extract_name(message[x])
-            output += f"{x+1}. {y}\n" 
-        await ctx.send(output)
+            output += f"{x+1}. {y}\n"
+        embed = discord.Embed(title="List Of Timetables", color=0x0080FF)
+        embed.set_thumbnail(
+            url="https://media.discordapp.net/attachments/770215748860772382/785844394972545094/mongodb-removebg-preview.png"
+        )
+        embed.add_field(name="!remove !add", value=output, inline=False)
+        await ctx.send(embed=embed)
+
+    @timetable.command(usage="BENIS", enabled=True)
+    async def view(self, ctx: commands.Context, name: str):
+        guild_id = ctx.guild.id
+        guildcollections = [
+            extract_name(x)
+            for x in database.db.list_collection_names()
+            if x.startswith(str(guild_id))
+        ]
+        if name not in guildcollections:
+            await ctx.send("Timetable does not exist.")
+        else:
+            file_path = f"{localpath}/static/{guild_id}_{name}.txt"
+            file = open(file_path, "w+")
+            selected = database.db[f"{guild_id}_{name}"].find()
+            try:
+                file.write(str(tabulate(selected[1:])))
+            except Exception as e:
+                print(e, e.__traceback__)
+            else:
+                await ctx.send(file=discord.File(file_path, filename=f"{name}.txt"))
+                os.remove(file_path)
 
 
 def setup(bot: commands.Bot):

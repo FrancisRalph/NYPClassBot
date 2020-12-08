@@ -1,0 +1,165 @@
+------------------------  -  ----  ------------
+5fc64637c246cd9288014fc1  0  1000  LECO6
+                                   DAV
+                                   ELEARNING
+
+                                   En
+                                   OVITA
+5fc64637c246cd9288014fd1  2  1700  LECO1
+                                   ANAGEO
+                                   ELEARNING
+                                   SIT
+
+                                   1KHORNH
+5fc64637c246cd9288014fc0  0  0900  LECO6
+                                   BSTAT
+                                   ELEARNING
+
+                                   FT
+                                   OHMOIY
+5fc64637c246cd9288014fd4  3  1300  TUTO6
+                                   DIGBIZ
+
+                                   ELEARNING
+                                   SIT
+
+                                   LIMAH
+5fc64637c246cd9288014fd3  3  0900  TUTO6
+                                   AV
+                                   LEARNING
+                                   IT
+
+                                   OYN
+5fc64637c246cd9288014fc5  0  1600  LABOG
+                                   UXD
+
+                                   L.635 SIT
+                                   CL19
+
+                                   pore
+5fc64637c246cd9288014fc6  0  1700  LABOG
+                                   UXD
+
+                                   L.635 SIT
+                                   CL19
+
+                                   pore
+5fc64637c246cd9288014fda  4  1000  LECO6
+                                   DIGBIZ
+                                   ELEARNING
+                                   SIT
+
+                                   LIMAH
+5fc64637c246cd9288014fc3  0  1400  LABOG
+
+                                   APPDPJ
+                                   L.635 SIT
+                                   CL19
+                                   FCHERNLING
+5fc64637c246cd9288014fcf  2  1100  TUTO6
+                                   BSTAT
+
+                                   L.606 SIT
+
+                                   TR6
+                                   1CHOOGABRI
+5fc64637c246cd9288014fcc  1  1700  LABO6
+                                   APPDPJ
+                                   L.635 SIT
+                                   CL19
+                                   1CHERNLING
+5fc64637c246cd9288014fcd  2  0900  NEDNE SDAY
+5fc64637c246cd9288014fdb  4  1100  LECO6
+                                   DIGBIZ
+                                   ELEARNING
+
+                                   SIT
+                                   LIMAH
+5fc64637c246cd9288014fd6  3  1500  TUTO6
+                                   NETWKT
+                                   ELEARNING
+                                   SIT
+
+                                   MICHAELNG
+5fc64637c246cd9288014fd0  2  1200  TUTO6
+                                   BSTAT
+
+                                   L.606 SIT
+                                   TR6
+
+                                   1CHOOGABRI
+5fc64637c246cd9288014fd5  3  1400  TUTO6
+
+                                   DIGBIZ
+                                   ELEARNING
+                                   SIT
+
+                                   LIMAH
+5fc64637c246cd9288014fcb  1  1600  LABO6
+                                   APPDPJ
+                                   L.635 SIT
+                                   CL19
+                                   1CHERNLING
+5fc64637c246cd9288014fd7  3  1600  TUT
+                                   ESW
+                                   ELEARNING
+                                   SIT
+
+                                   GSMINTR11
+                                   TEHAH
+5fc64637c246cd9288014fc7  1  1100  LABO6
+                                   DAV
+
+                                   L.635 SIT
+
+                                   CL19
+                                   ROYN
+5fc64637c246cd9288014fc2  0  1100  LECO6
+                                   NETWEKT
+                                   ELEARNING
+
+                                   SIT
+                                   LIMKT
+5fc64637c246cd9288014fd9  4  0900  IT-CIP PEM16
+                                   CIPPEM
+                                   ELEARNING
+                                   SIT
+
+                                   EUNICEA
+5fc64637c246cd9288014fc8  1  1200  LABO6
+                                   DAV
+
+                                   L.635 SIT
+                                   CL19
+                                   ROYN
+5fc64637c246cd9288014fc9  1  1400  LABO6
+
+                                   NETWKT
+                                   L.635 SIT
+                                   CL19
+                                   MICHAELNG
+5fc64637c246cd9288014fca  1  1500  LABO6
+                                   NETWKT
+                                   L.635 SIT
+                                   CL19
+                                   MICHAELNG
+5fc64637c246cd9288014fce  2  1000  TUTO6
+                                   BSTAT
+
+                                   L.606 SIT
+                                   TR6
+
+                                   1CHOOGABRI
+5fc64637c246cd9288014fc4  0  1500  LABOG
+                                   APPDPJ
+                                   L.635 SIT
+                                   CL19
+                                   |1CHERNLING
+5fc64637c246cd9288014fd8  3  1700  TUT
+                                   ESW
+                                   ELEARNING
+                                   SIT
+
+                                   GSMINTR11
+                                   TEHAH
+------------------------  -  ----  ------------
