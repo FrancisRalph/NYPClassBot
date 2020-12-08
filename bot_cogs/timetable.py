@@ -176,16 +176,31 @@ class TimeTable(BaseCog):
         if name not in guildcollections:
             await ctx.send("Timetable does not exist.")
         else:
-            file_path = f"{localpath}/static/{guild_id}_{name}.txt"
-            file = open(file_path, "w+")
-            selected = database.db[f"{guild_id}_{name}"].find()
-            try:
-                file.write(str(tabulate(selected[1:])))
-            except Exception as e:
-                print(e, e.__traceback__)
-            else:
-                await ctx.send(file=discord.File(file_path, filename=f"{name}.txt"))
-                os.remove(file_path)
+            selected = database.db[f"{guild_id}_cip"].find()
+            sorted_selected = sorted(selected, key=lambda x: x["day"])
+            i = 0
+            run = True
+            while run:
+                output = ""
+                word_count = 0
+                for x in range(i, selected.count() + 1):
+                    try:
+                        text = (
+                            " ".join(map(str, list(sorted_selected[x].values())[1:]))
+                        ).replace("\n", "")
+                        word_count += len(text)
+                        print(word_count)
+                        if word_count > 2000:
+                            word_count -= len(text)
+                            i = x
+                        else:
+                            output += f"{text}\n"
+                    except:
+                        await ctx.send(output)
+                        run = False
+                        break
+                if i >= selected.count():
+                    break
 
 
 def setup(bot: commands.Bot):
