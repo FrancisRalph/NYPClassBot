@@ -187,7 +187,7 @@ class TimeTable(BaseCog):
                     try:
                         text = (
                             " ".join(map(str, list(sorted_selected[x].values())[1:]))
-                        ).replace("\n", "")
+                        ).replace("\n", " ")
                         word_count += len(text)
                         print(word_count)
                         if word_count > 2000:
