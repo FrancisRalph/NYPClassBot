@@ -14,7 +14,7 @@ from tabulate import tabulate
 from modules import dataprocess, upscaler, timetableconverter, database
 
 valid_image_extensions = ("jpg", "jpeg", "png")
-max_image_size = 1e6  # in bytes (1MB)
+max_image_size = 2e6  # in bytes (1MB)
 prompt_duration = 30
 localpath = os.getcwd()
 
@@ -119,7 +119,7 @@ class TimeTable(BaseCog):
         await author.send("File has been cleaned, adding to database.")
 
         # inserting to db
-        db = await asynchronise_func(database.Db)(f"{guild_id}")
+        db = await asynchronise_func(database.Db)(f"{guild_id}_{name}")
         await author.send("Database has been created.")
 
         await asynchronise_func(db.insertManyEntry)(array_of_entries)
