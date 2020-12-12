@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 import time
+from pytz import timezone
+from tzlocal import get_localzone
 import discord
 from discord.ext import commands, tasks
 
@@ -39,21 +41,22 @@ async def on_message(message):
 timings = []
 day = -1
 prevday = -1
-
-
+sgtime = datetime.fromtimestamp(time.time(), timezone("Asia/Singapore"))
+timing = ""
 @tasks.loop(seconds=1.0)
 async def reminder():
     global day
     global timings
     global prevday
-
-    day = datetime.today().weekday()
-    timing = f"{time.strftime('%H%M', time.gmtime(time.time() + 8*60*60))}"
+    global timing
+    sgtime = datetime.fromtimestamp(time.time(), timezone("Asia/Singapore"))
+    day = sgtime.weekday()
+    timing = f"{sgtime.strftime('%H%M')}"
     for x in timings:
         if timing == x["time"]:
             print("Reminder Alert")
             await bot.get_guild(x["guildid"]).system_channel.send(
-                f"{x['time']}\n\n{x['subject']}"
+                f"For {x['timetable']}\n\n{x['time']}\n\n{x['subject']}"
             )
             print("Message Sent")
             timings.remove(x)
@@ -65,22 +68,29 @@ async def reminder():
 @reminder.before_loop
 async def reminder_pre():
     global prevday
-    prevday = datetime.today().weekday()
+    global timing
+    global sgtime
+    prevday = sgtime.weekday()
     await refresh(prevday)
     await bot.wait_until_ready()
     print("Reminder setted up")
 
 
 async def refresh(day):
+    global timing
     global timings
     timings = []
     for x in bot.guilds:
-        times = Db(x.id)
-        times = times.getAllEntry()
-        for y in times:
-            if day == y["day"]:
-                y["guildid"] = x.id
-                timings.append(y)
+        tt = Db(str(x.id))
+        for g in tt.getAllEntry():
+            times = Db(str(x.id) + "_" + g["subject"]) ##Subject in this case is Timetable name
+            times = times.getAllEntry()
+            for y in times:
+                if day == y["day"]:
+                    y["guildid"] = x.id
+                    y["timetable"] = g
+                    timings.append(y)
+    print(timings)
 
 
 if __name__ == "__main__":
