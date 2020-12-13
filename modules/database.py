@@ -1,6 +1,7 @@
 import pymongo
 from pymongo import MongoClient
 import tabulate
+import datetime
 
 cluster = MongoClient(
     "mongodb+srv://NYPCLASSBOT:fatpeepee123@nyp-class-bot.boaao.mongodb.net/class-links?retryWrites=true&w=majority"
@@ -9,6 +10,8 @@ db = cluster["class_links"]
 
 
 class Db:
+    cluster = db
+
     def __init__(self, guildId):
         self.guildId = guildId
         # self.collection = db[str(guildId)]
@@ -65,3 +68,14 @@ class Db:
             entries.append(i)
         return entries
 
+
+if __name__ == "__main__":
+    # 769097949514563594
+    guildDb = Db("769097949514563594_cip")
+    # print(list(db.list_collection_names()))
+    print(guildDb.getAllEntry())
+    secondsFromNow = (datetime.timedelta(0, 20) + datetime.datetime.now()).strftime("%H%M")
+    print(secondsFromNow)
+    # guildDb.insertEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", 6, secondsFromNow)
+    # 2001
+    # guildDb.deleteSingleEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", 6, "2001")

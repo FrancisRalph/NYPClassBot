@@ -2,7 +2,8 @@ import os
 from datetime import datetime
 import time
 from pytz import timezone
-from tzlocal import get_localzone
+import re
+
 import discord
 from discord.ext import commands, tasks
 
@@ -80,15 +81,25 @@ async def refresh(day):
     global timing
     global timings
     timings = []
+    collection_names = Db.cluster.list_collection_names()
     for x in bot.guilds:
-        tt = Db(str(x.id))
-        for g in tt.getAllEntry():
-            times = Db(str(x.id) + "_" + g["subject"]) ##Subject in this case is Timetable name
-            times = times.getAllEntry()
+        guild_collection_names = []
+        for name in collection_names:
+            # extract guild id from collection name
+            match = re.match("([^_]+)_.+", name)
+            if match:
+                collection_guild = match.group(1)
+                # if collection guild id is the same as current guild id,
+                # add to list so that timings get be retrieved
+                if collection_guild == str(x.id):
+                    guild_collection_names.append(name)
+        for collection_name in guild_collection_names:
+            timetable_db = Db(collection_name)
+            times = timetable_db.getAllEntry()
             for y in times:
                 if day == y["day"]:
                     y["guildid"] = x.id
-                    y["timetable"] = g
+                    y["timetable"] = collection_name
                     timings.append(y)
     print(timings)
 

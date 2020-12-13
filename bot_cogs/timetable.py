@@ -124,8 +124,7 @@ class TimeTable(BaseCog):
 
         await asynchronise_func(db.insertManyEntry)(array_of_entries)
         await author.send("Collection has been inserted.")
-        guildtt = database.Db(str(ctx.guild.id))
-        await asynchronise_func(guildtt.insertEntry)(name, '0', '0000') ##Inserting Timetable name to db.guildid
+
         try:
             os.remove(image_path)
             os.remove(excel_path)
