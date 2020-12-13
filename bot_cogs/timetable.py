@@ -27,6 +27,13 @@ def extract_name(x: str):
         print(f"Error extracting timetable name from {x}")
         return None
 
+def extract_id(x: str):
+    match: re.Match = re.search("([^_]+)_.+", x)
+    if match is not None:
+        return match.group(1)
+    else:
+        print(f"Error extracting timetable guild id from {x}")
+        return None
 
 def asynchronise_func(foo):
     async def bar(*args):
@@ -152,7 +159,7 @@ class TimeTable(BaseCog):
         message = [
             x
             for x in database.db.list_collection_names()
-            if x.startswith(str(guild_id))
+            if extract_id(x) == str(guild_id)
         ]
         output = ""
         for x in range(len(message)):
@@ -171,7 +178,7 @@ class TimeTable(BaseCog):
         guildcollections = [
             extract_name(x)
             for x in database.db.list_collection_names()
-            if x.startswith(str(guild_id))
+            if extract_id(x) == str(guild_id)
         ]
         if name not in guildcollections:
             await ctx.send("Timetable does not exist.")
