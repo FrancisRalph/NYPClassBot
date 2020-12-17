@@ -1,13 +1,15 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 from pytz import timezone
 import re
+from difflib import SequenceMatcher
 
 import discord
 from discord.ext import commands, tasks
 
 from modules.database import Db
+from bot_cogs.timetable import extract_name
 
 command_prefix = "!"
 
@@ -44,23 +46,44 @@ day = -1
 prevday = -1
 sgtime = datetime.fromtimestamp(time.time(), timezone("Asia/Singapore"))
 timing = ""
+
+def add_hours(time_str, hours):
+    return datetime.strftime(datetime.strptime(time_str, "%H%M") + timedelta(hours=hours), "%H%M")
+
 @tasks.loop(seconds=1.0)
 async def reminder():
     global day
     global timings
     global prevday
     global timing
+
     sgtime = datetime.fromtimestamp(time.time(), timezone("Asia/Singapore"))
     day = sgtime.weekday()
     timing = f"{sgtime.strftime('%H%M')}"
-    for x in timings:
-        if timing == x["time"]:
-            print("Reminder Alert")
-            await bot.get_guild(x["guildid"]).system_channel.send(
-                f"For {x['timetable']}\n\n{x['time']}\n\n{x['subject']}"
+
+    for timing_dict in timings:
+        entry = timing_dict["entry"]
+        if timing == entry["time"]:
+            subject_text = entry["subject"].replace("\n", " ")
+            timetable_name = extract_name(timing_dict["timetableName"])
+
+            end_entry = entry.get("endEntry")
+            if end_entry is None:
+                end_time = add_hours(entry["time"], 1)
+            else:
+                end_time = add_hours(end_entry["time"], 1)
+
+            embed = discord.Embed(
+                title=f"{timetable_name}: {subject_text}",
+                color=0xFFC905,
+                description=f"Start: `{entry['time']}`\nEnd: `{end_time}`"
             )
+
+            await bot.get_guild(timing_dict["guildId"]).system_channel.send(embed=embed)
+
             print("Message Sent")
-            timings.remove(x)
+            timings.remove(timing_dict)
+
     if day != prevday:
         await refresh(day)
         prevday = day
@@ -96,11 +119,30 @@ async def refresh(day):
         for collection_name in guild_collection_names:
             timetable_db = Db(collection_name)
             times = timetable_db.getAllEntry()
-            for y in times:
-                if day == y["day"]:
-                    y["guildid"] = x.id
-                    y["timetable"] = collection_name
-                    timings.append(y)
+
+            sorted_times = sorted(times, key=lambda _entry: (_entry["day"], _entry["time"]))
+
+            cleaned_times = []
+            for entry in sorted_times:
+                already_cleaned = False
+                for cleaned_entry in cleaned_times:
+                    if cleaned_entry["day"] == entry["day"]:
+                        subject_similarity = SequenceMatcher(None, entry["subject"], cleaned_entry["subject"]).ratio()
+                        if subject_similarity > 0.7:
+                            already_cleaned = True
+                            cleaned_entry["endEntry"] = entry.copy()
+                            break
+                if cleaned_times.count(entry) == 0 and not already_cleaned:
+                    cleaned_times.append(entry)
+
+            for entry in cleaned_times:
+                if day == entry["day"]:
+                    timing_dict = {
+                        "guildId": x.id,
+                        "timetableName": collection_name,
+                        "entry": entry,
+                    }
+                    timings.append(timing_dict)
     print(timings)
 
 

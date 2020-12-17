@@ -73,9 +73,10 @@ if __name__ == "__main__":
     # 769097949514563594
     guildDb = Db("769097949514563594_cip")
     # print(list(db.list_collection_names()))
-    print(guildDb.getAllEntry())
+    print(sorted(guildDb.getAllEntry(), key=lambda entry: (entry["day"], entry["time"])))
     secondsFromNow = (datetime.timedelta(0, 20) + datetime.datetime.now()).strftime("%H%M")
     print(secondsFromNow)
-    # guildDb.insertEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", 6, secondsFromNow)
-    # 2001
-    # guildDb.deleteSingleEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", 6, "2001")
+    day = datetime.datetime.today().weekday()
+    # guildDb.insertEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", day, secondsFromNow)
+    # 0224
+    # guildDb.deleteSingleEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", day, "0224")
