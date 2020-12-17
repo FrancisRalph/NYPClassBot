@@ -190,7 +190,8 @@ def readfile(image_path, excel_output_path):
     # save df to pickle for debugging later
     data = dataframe.style.set_properties(align="left")
     # Converting it in a excel-file
-    data.to_excel(excel_output_path, engine='xlsxwriter')
+    data.to_excel(excel_output_path)
     return
+
 
 # readfile(os.path.join(os.getcwd(),"images\\769097949514563594.png"), "769097949514563594")
