@@ -106,15 +106,15 @@ class TimeTable(BaseCog):
             )
             return
 
-        guild_id = f"{ctx.guild.id}_{name}"
+        collection_name = f"{ctx.guild.id}_{name}"
         # paths for input and output
-        image_path = os.path.join(os.getcwd(), f"images/{guild_id}.png")
-        excel_path = os.path.join(os.getcwd(), f"excel/{guild_id}.xlsx")
+        image_path = os.path.join(os.getcwd(), f"images/{collection_name}.png")
+        excel_path = os.path.join(os.getcwd(), f"excel/{collection_name}.xlsx")
 
         await image.save(image_path)
         await author.send("File saved, upscaling now.")
 
-        await asynchronise_func(upscaler.upscale)(image_path, guild_id)
+        await asynchronise_func(upscaler.upscale)(image_path, collection_name)
         await author.send("Upscaling finished, converting to excel now.")
 
         # converting xlxs
@@ -122,11 +122,11 @@ class TimeTable(BaseCog):
         await author.send("File converted to excel, cleaning file.")
 
         # cleaning xlxs
-        array_of_entries = (dataprocess.cleanData(excel_path, guild_id))[0]
+        array_of_entries = (dataprocess.cleanData(excel_path, collection_name))[0]
         await author.send("File has been cleaned, adding to database.")
 
         # inserting to db
-        db = await asynchronise_func(database.Db)(f"{guild_id}_{name}")
+        db = await asynchronise_func(database.Db)(collection_name)
         await author.send("Database has been created.")
 
         await asynchronise_func(db.insertManyEntry)(array_of_entries)
