@@ -3,6 +3,7 @@ from typing import Union
 import asyncio
 import re
 import os
+from datetime import datetime, timedelta
 
 # other modules
 import discord
@@ -10,6 +11,7 @@ from discord.ext import commands, tasks
 from bot_cogs.base.base_cog import BaseCog
 from tabulate import tabulate
 from dpymenus import Page, PaginatedMenu
+import validators
 
 # project modules
 from modules import dataprocess, upscaler, timetableconverter, database
@@ -46,7 +48,37 @@ def asynchronise_func(foo):
     return bar
 
 
+def add_hours(time_str, hours):
+    return datetime.strftime(
+        datetime.strptime(time_str, "%H%M") + timedelta(hours=hours), "%H%M"
+    )
+
+
+def create_entry_embed(name, entry):
+    subject_text = entry["subject"].replace("\n", " ")
+    timetable_name = extract_name(name)
+
+    end_entry = entry.get("endEntry")
+    if end_entry is None:
+        end_time = add_hours(entry["time"], 1)
+    else:
+        end_time = add_hours(end_entry["time"], 1)
+
+    description = f"From `{entry['time']}` to  `{end_time}`"
+    link = entry.get("link")
+    if link:
+        description += f"\n{link}"
+    embed = discord.Embed(
+        title=f"{timetable_name}: {subject_text}",
+        color=0xFFC905,
+        description=description
+    )
+
+    return embed
+
 class TimeTable(BaseCog):
+    days = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
+
     @commands.group()
     # @commands.guild_only()
     async def timetable(self, ctx: commands.Context):
@@ -188,8 +220,13 @@ class TimeTable(BaseCog):
         embed.add_field(name="!remove !add", value=output, inline=False)
         await ctx.send(embed=embed)
 
-    @timetable.command(usage="BENIS", enabled=True)
-    async def view(self, ctx: commands.Context, name: str):
+    def get_entries_by_day(self, collection_name: str):
+        return [
+            sorted(list(database.db[collection_name].find({"day": i})), key=lambda entry: entry["time"])
+            for i in range(7)
+        ]
+
+    def create_menu(self, ctx: commands.Context, name: str):
         guild_id = ctx.guild.id
         guildcollections = [
             extract_name(x)
@@ -197,33 +234,153 @@ class TimeTable(BaseCog):
             if extract_id(x) == str(guild_id)
         ]
         if name not in guildcollections:
-            await ctx.send("Timetable does not exist.")
+            return None
         else:
             menu = PaginatedMenu(ctx)
             all_pages = {}
-            days = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
+
+            collection_name = f"{guild_id}_{name}"
+            entries_by_day = self.get_entries_by_day(collection_name)
+
             for i in range(7):
+                day_entries = entries_by_day[i]
                 x = "\n".join(
                     [
-                        (" ".join(list(map(str, list(i.values())[2:])))).replace(
+                        f"{num + 1}) " +
+                        (" ".join(list(map(str, list([entry[key] for key in entry if key != "link"])[2:]))))
+                        .replace(
                             "\n", " "
                         )
-                        for i in list(
-                            database.db[f"{guild_id}_{name}"].find({"day": i})
-                        )
+                        for num, entry in enumerate(day_entries)
                     ]
                 )
                 if x == "" or None or type(x) != str:
                     break
-                page_i = Page(title=f"Page {i+1}", description=f"Slots for {days[i]}")
-                page_i.add_field(name=days[i], value=x)
-                all_pages[i] = page_i
+                page_i = Page(title=f"Page {i + 1}", description=f"Slots for {TimeTable.days[i]}")
+                page_i.add_field(name=TimeTable.days[i], value=x)
+
+                all_pages[i] = page_i.as_safe_embed()
 
             menu.add_pages(list(all_pages.values()))
             menu.hide_cancel_button()
             menu.show_skip_buttons()
             menu.set_timeout(120)
+            menu.allow_multisession()
+
+            return menu
+
+    @timetable.command(usage="<name>", enabled=True)
+    async def view(self, ctx: commands.Context, name: str):
+        print("hi", ctx, name,)
+        menu = self.create_menu(ctx, name)
+        if menu is None:
+            await ctx.send("Timetable does not exist.")
+        else:
             await menu.open()
+
+    @timetable.command(usage="<name> <day> <entry number/name>", enabled=True)
+    async def link(self, ctx: commands.Context, name: str, day: str, entry_input: str):
+        day = day.lower()
+        lower_days = list(map(lambda x: x.lower(), TimeTable.days))
+
+        if lower_days.count(day) == 0:
+            await ctx.send("Please enter a valid day.")
+            return
+        day_index = lower_days.index(day)
+
+        guild_id = ctx.guild.id
+        collection_names = database.db.list_collection_names()
+        collection_name = f"{guild_id}_{name}"
+
+        if collection_name not in collection_names:
+            await ctx.send("Please enter a valid timetable name.")
+            await self.list(ctx)
+            return
+
+        db = database.Db(collection_name)
+        entries_by_day = self.get_entries_by_day(collection_name)
+
+        valid_input = True
+        try:
+            entry_input = int(entry_input)
+        except ValueError:
+            merged_entry = db.getMergedSubjectEntryFromDay(day_index, entry_input.upper(), 0.1)
+            if merged_entry is None:
+                valid_input = False
+        else:
+            try:
+                entry = entries_by_day[day_index][entry_input - 1]
+            except IndexError:
+                valid_input = False
+            else:
+                merged_entry = db.getMergedSubjectEntryFromDay(day_index, entry["subject"])
+
+        if not valid_input:
+            await ctx.send("Please enter a valid entry (subject name or number from view)")
+            return
+
+        author: Union[discord.User, discord.Member] = ctx.author
+
+
+        if merged_entry.get("link"):
+            await ctx.send(
+                "A zoom link is already in place. Do you want to overwrite it? (Y/N)",
+               embed=create_entry_embed(collection_name, merged_entry)
+            )
+            confirm_msg: discord.Message = await self.bot.wait_for(
+                "message", check=lambda msg: msg.author == author, timeout=prompt_duration
+            )
+            if confirm_msg.content.lower() != "y":
+                await ctx.send("Prompt cancelled.")
+                return
+
+        subject_text = merged_entry["subject"].replace("\n", " ")
+        try:
+            await author.send(f"You have {prompt_duration} seconds to send a zoom link for `{subject_text}`.")
+        except Exception as error:
+            if isinstance(error, discord.Forbidden):
+                await ctx.send(
+                    "{} please turn on your DMs and try again.".format(author.mention)
+                )
+            else:
+                await ctx.send(
+                    "{} I was unable to send you a DM. Error: {}".format(
+                        author.mention, error
+                    )
+                )
+            return
+
+        if ctx.channel.type != discord.ChannelType.private:
+            await ctx.send("You have been prompted in your DMs.")
+
+        def check(msg: discord.Message):
+            return (
+                msg.author == author
+                and msg.channel.type == discord.ChannelType.private
+            )
+
+        try:
+            received_msg: discord.Message = await self.bot.wait_for(
+                "message", check=lambda msg: check(msg) and validators.url(msg.content), timeout=prompt_duration
+            )
+        except asyncio.TimeoutError:
+            await author.send(
+                "You did not send a valid link on time, the prompt has been cancelled."
+            )
+            return
+
+        link = received_msg.content
+
+        db.updateEntry(
+            merged_entry["subject"],
+            merged_entry["day"],
+            merged_entry["time"],
+            "link",
+            link
+        )
+
+        merged_entry["link"] = link
+        await author.send("Entry has been updated!", embed=create_entry_embed(collection_name, merged_entry))
 
 
 def setup(bot: commands.Bot):

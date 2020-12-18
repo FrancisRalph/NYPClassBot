@@ -1,17 +1,16 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 from pytz import timezone
 import re
-from difflib import SequenceMatcher
 
 import discord
 from discord.ext import commands, tasks
 
 from modules.database import Db
-from bot_cogs.timetable import extract_name
+from bot_cogs.timetable import create_entry_embed
 
-command_prefix = "!"
+command_prefix = "."
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 bot.remove_command("help")
@@ -49,12 +48,6 @@ sgtime = datetime.fromtimestamp(time.time(), timezone("Asia/Singapore"))
 timing = ""
 
 
-def add_hours(time_str, hours):
-    return datetime.strftime(
-        datetime.strptime(time_str, "%H%M") + timedelta(hours=hours), "%H%M"
-    )
-
-
 @tasks.loop(seconds=1.0)
 async def reminder():
     global day
@@ -69,22 +62,7 @@ async def reminder():
     for timing_dict in timings:
         entry = timing_dict["entry"]
         if timing == entry["time"]:
-            subject_text = entry["subject"].replace("\n", " ")
-            timetable_name = extract_name(timing_dict["timetableName"])
-
-            end_entry = entry.get("endEntry")
-            if end_entry is None:
-                end_time = add_hours(entry["time"], 1)
-            else:
-                end_time = add_hours(end_entry["time"], 1)
-
-            embed = discord.Embed(
-                title=f"{timetable_name}: {subject_text}",
-                color=0xFFC905,
-                description=f"Start: `{entry['time']}`\nEnd: `{end_time}`",
-            )
-
-            await bot.get_guild(timing_dict["guildId"]).system_channel.send(embed=embed)
+            await bot.get_guild(timing_dict["guildId"]).system_channel.send(embed=create_entry_embed(timing_dict["timetableName"], entry))
 
             print("Message Sent")
             timings.remove(timing_dict)
@@ -123,28 +101,9 @@ async def refresh(day):
                     guild_collection_names.append(name)
         for collection_name in guild_collection_names:
             timetable_db = Db(collection_name)
-            times = timetable_db.getAllEntry()
+            times = timetable_db.getEntriesMergedBySubject()
 
-            sorted_times = sorted(
-                times, key=lambda _entry: (_entry["day"], _entry["time"])
-            )
-
-            cleaned_times = []
-            for entry in sorted_times:
-                already_cleaned = False
-                for cleaned_entry in cleaned_times:
-                    if cleaned_entry["day"] == entry["day"]:
-                        subject_similarity = SequenceMatcher(
-                            None, entry["subject"], cleaned_entry["subject"]
-                        ).ratio()
-                        if subject_similarity > 0.7:
-                            already_cleaned = True
-                            cleaned_entry["endEntry"] = entry.copy()
-                            break
-                if cleaned_times.count(entry) == 0 and not already_cleaned:
-                    cleaned_times.append(entry)
-
-            for entry in cleaned_times:
+            for entry in times:
                 if day == entry["day"]:
                     timing_dict = {
                         "guildId": x.id,
@@ -185,6 +144,11 @@ async def help(ctx):
         value="Shows all entries of specified timetable.",
         inline=False,
     )
+    embed.add_field(
+        name="!timetable link [name] [day] [entry number/name]",
+        value="Allows you to add zoom links to subjects in a timetable.",
+        inline=False,
+    )
     await ctx.send(embed=embed)
 
 
@@ -196,5 +160,5 @@ if __name__ == "__main__":
             # e.g load_extension("bot_cogs.timetable")
             bot.load_extension("{}.{}".format(cogs_path, file[:-3]))
 
-    # bot.run("NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ")
-    bot.run("Nzc0ODg5NDI5MzkxMjQ1MzUy.X6eWBA.wGtzFFyVNFfvqMEhGAJaE7BNnGg")
+    bot.run("NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ")
+    # bot.run("Nzc0ODg5NDI5MzkxMjQ1MzUy.X6eWBA.wGtzFFyVNFfvqMEhGAJaE7BNnGg")
