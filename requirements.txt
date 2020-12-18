@@ -46,3 +46,4 @@ WTForms==2.3.3
 xlrd==1.2.0
 XlsxWriter==1.3.7
 yarl==1.5.1
+dpymenus==1.2.3 
