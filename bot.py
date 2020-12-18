@@ -14,6 +14,7 @@ from bot_cogs.timetable import extract_name
 command_prefix = "!"
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
+bot.remove_command("help")
 
 
 @bot.event
@@ -47,8 +48,12 @@ prevday = -1
 sgtime = datetime.fromtimestamp(time.time(), timezone("Asia/Singapore"))
 timing = ""
 
+
 def add_hours(time_str, hours):
-    return datetime.strftime(datetime.strptime(time_str, "%H%M") + timedelta(hours=hours), "%H%M")
+    return datetime.strftime(
+        datetime.strptime(time_str, "%H%M") + timedelta(hours=hours), "%H%M"
+    )
+
 
 @tasks.loop(seconds=1.0)
 async def reminder():
@@ -76,7 +81,7 @@ async def reminder():
             embed = discord.Embed(
                 title=f"{timetable_name}: {subject_text}",
                 color=0xFFC905,
-                description=f"Start: `{entry['time']}`\nEnd: `{end_time}`"
+                description=f"Start: `{entry['time']}`\nEnd: `{end_time}`",
             )
 
             await bot.get_guild(timing_dict["guildId"]).system_channel.send(embed=embed)
@@ -120,14 +125,18 @@ async def refresh(day):
             timetable_db = Db(collection_name)
             times = timetable_db.getAllEntry()
 
-            sorted_times = sorted(times, key=lambda _entry: (_entry["day"], _entry["time"]))
+            sorted_times = sorted(
+                times, key=lambda _entry: (_entry["day"], _entry["time"])
+            )
 
             cleaned_times = []
             for entry in sorted_times:
                 already_cleaned = False
                 for cleaned_entry in cleaned_times:
                     if cleaned_entry["day"] == entry["day"]:
-                        subject_similarity = SequenceMatcher(None, entry["subject"], cleaned_entry["subject"]).ratio()
+                        subject_similarity = SequenceMatcher(
+                            None, entry["subject"], cleaned_entry["subject"]
+                        ).ratio()
                         if subject_similarity > 0.7:
                             already_cleaned = True
                             cleaned_entry["endEntry"] = entry.copy()
@@ -146,6 +155,39 @@ async def refresh(day):
     print(timings)
 
 
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed(
+        title="!Help",
+        description="Shows available commands and their usage.",
+        color=0x0080C0,
+    )
+    embed.set_thumbnail(
+        url="https://media.discordapp.net/attachments/769097949514563597/789432709616238622/1536892103042-removebg-preview.png"
+    )
+    embed.add_field(
+        name="!timetable add [name]",
+        value="Registers timetable for server, maximum 3.",
+        inline=False,
+    )
+    embed.add_field(
+        name="!timetable remove [name]",
+        value="Removes specified timetable from server.",
+        inline=False,
+    )
+    embed.add_field(
+        name="!timetable list",
+        value="Shows all timetables associated with this server.",
+        inline=False,
+    )
+    embed.add_field(
+        name="!timetable view [name]",
+        value="Shows all entries of specified timetable.",
+        inline=False,
+    )
+    await ctx.send(embed=embed)
+
+
 if __name__ == "__main__":
     cogs_path = "bot_cogs"
     for file in os.listdir(os.path.join(os.getcwd(), cogs_path)):
@@ -154,5 +196,5 @@ if __name__ == "__main__":
             # e.g load_extension("bot_cogs.timetable")
             bot.load_extension("{}.{}".format(cogs_path, file[:-3]))
 
-    bot.run('NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ')
-    # bot.run("Nzc0ODg5NDI5MzkxMjQ1MzUy.X6eWBA.wGtzFFyVNFfvqMEhGAJaE7BNnGg")
+    # bot.run("NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ")
+    bot.run("Nzc0ODg5NDI5MzkxMjQ1MzUy.X6eWBA.wGtzFFyVNFfvqMEhGAJaE7BNnGg")

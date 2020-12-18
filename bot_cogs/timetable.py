@@ -222,10 +222,8 @@ class TimeTable(BaseCog):
             menu.add_pages(list(all_pages.values()))
             menu.hide_cancel_button()
             menu.show_skip_buttons()
-            # page3 = Page(title="Page 3", description="Third page test!")
-            # page3.add_field(name="Example E", value="Example F")
+            menu.set_timeout(120)
             await menu.open()
-            await ctx.send(menu)
 
 
 def setup(bot: commands.Bot):
