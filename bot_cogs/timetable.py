@@ -9,6 +9,7 @@ import discord
 from discord.ext import commands, tasks
 from bot_cogs.base.base_cog import BaseCog
 from tabulate import tabulate
+from dpymenus import Page, PaginatedMenu
 
 # project modules
 from modules import dataprocess, upscaler, timetableconverter, database
@@ -27,6 +28,7 @@ def extract_name(x: str):
         print(f"Error extracting timetable name from {x}")
         return None
 
+
 def extract_id(x: str):
     match: re.Match = re.search("([^_]+)_.+", x)
     if match is not None:
@@ -34,6 +36,7 @@ def extract_id(x: str):
     else:
         print(f"Error extracting timetable guild id from {x}")
         return None
+
 
 def asynchronise_func(foo):
     async def bar(*args):
@@ -53,6 +56,19 @@ class TimeTable(BaseCog):
     @timetable.command(usage="<name>")
     async def add(self, ctx: commands.Context, name: str):
         author: Union[discord.User, discord.Member] = ctx.author
+
+        guild_id = ctx.guild.id
+        no_guildcollections = len(
+            [
+                extract_name(x)
+                for x in database.db.list_collection_names()
+                if x.startswith(str(guild_id))
+            ]
+        )
+        if no_guildcollections >= 3:
+            await ctx.send("Max number of timetables registered for this server.")
+            return
+
         try:
             await author.send(
                 "Please upload an image of the timetable from the NYP website."
@@ -183,31 +199,33 @@ class TimeTable(BaseCog):
         if name not in guildcollections:
             await ctx.send("Timetable does not exist.")
         else:
-            selected = database.db[f"{guild_id}_cip"].find()
-            sorted_selected = sorted(selected, key=lambda x: x["day"])
-            i = 0
-            run = True
-            while run:
-                output = ""
-                word_count = 0
-                for x in range(i, selected.count() + 1):
-                    try:
-                        text = (
-                            " ".join(map(str, list(sorted_selected[x].values())[1:]))
-                        ).replace("\n", " ")
-                        word_count += len(text)
-                        print(word_count)
-                        if word_count > 2000:
-                            word_count -= len(text)
-                            i = x
-                        else:
-                            output += f"{text}\n"
-                    except:
-                        await ctx.send(output)
-                        run = False
-                        break
-                if i >= selected.count():
+            menu = PaginatedMenu(ctx)
+            all_pages = {}
+            days = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
+            for i in range(7):
+                x = "\n".join(
+                    [
+                        (" ".join(list(map(str, list(i.values())[2:])))).replace(
+                            "\n", " "
+                        )
+                        for i in list(
+                            database.db[f"{guild_id}_{name}"].find({"day": i})
+                        )
+                    ]
+                )
+                if x == "" or None or type(x) != str:
                     break
+                page_i = Page(title=f"Page {i+1}", description=f"Slots for {days[i]}")
+                page_i.add_field(name=days[i], value=x)
+                all_pages[i] = page_i
+
+            menu.add_pages(list(all_pages.values()))
+            menu.hide_cancel_button()
+            menu.show_skip_buttons()
+            # page3 = Page(title="Page 3", description="Third page test!")
+            # page3.add_field(name="Example E", value="Example F")
+            await menu.open()
+            await ctx.send(menu)
 
 
 def setup(bot: commands.Bot):
