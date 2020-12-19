@@ -127,4 +127,4 @@ if __name__ == "__main__":
     day = datetime.datetime.today().weekday()
     # guildDb.insertEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", day, secondsFromNow)
     # 0224
-    # guildDb.deleteSingleEntry("LECO6\nBSTAT\nELEARNING\n\nFT\nOHMOIY", day, "0101")
+    # guildDb.deleteSingleEntry("NEDNE SDAY", 2, "0900")

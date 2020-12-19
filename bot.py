@@ -119,7 +119,7 @@ async def refresh(day):
 @bot.command()
 async def help(ctx):
     embed = discord.Embed(
-        title="!Help",
+        title="!help",
         description="Shows available commands and their usage.",
         color=0x0080C0,
     )
