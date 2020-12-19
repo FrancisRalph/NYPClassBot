@@ -90,14 +90,16 @@ class TimeTable(BaseCog):
         author: Union[discord.User, discord.Member] = ctx.author
 
         guild_id = ctx.guild.id
-        no_guildcollections = len(
-            [
+        guildcollections = [
                 extract_name(x)
                 for x in database.db.list_collection_names()
                 if x.startswith(str(guild_id))
             ]
-        )
-        if no_guildcollections >= 3:
+        
+        if name in guildcollections:
+            await ctx.send("Timetable with name already exists.")
+            return
+        if len(guildcollections) >= 3:
             await ctx.send("Max number of timetables registered for this server.")
             return
 

@@ -10,7 +10,7 @@ from discord.ext import commands, tasks
 from modules.database import Db
 from bot_cogs.timetable import create_entry_embed
 
-command_prefix = "."
+command_prefix = "!"
 
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 bot.remove_command("help")
@@ -62,7 +62,9 @@ async def reminder():
     for timing_dict in timings:
         entry = timing_dict["entry"]
         if timing == entry["time"]:
-            await bot.get_guild(timing_dict["guildId"]).system_channel.send(embed=create_entry_embed(timing_dict["timetableName"], entry))
+            await bot.get_guild(timing_dict["guildId"]).system_channel.send(
+                embed=create_entry_embed(timing_dict["timetableName"], entry)
+            )
 
             print("Message Sent")
             timings.remove(timing_dict)
@@ -160,5 +162,5 @@ if __name__ == "__main__":
             # e.g load_extension("bot_cogs.timetable")
             bot.load_extension("{}.{}".format(cogs_path, file[:-3]))
 
-    bot.run("NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ")
-    # bot.run("Nzc0ODg5NDI5MzkxMjQ1MzUy.X6eWBA.wGtzFFyVNFfvqMEhGAJaE7BNnGg")
+    # bot.run("NzcxMDAyMjkzMzk4OTI5NDA4.X5lx1w.wDiGh9zA96h6vsOLQ2iLCvKCgMQ")
+    bot.run("Nzc0ODg5NDI5MzkxMjQ1MzUy.X6eWBA.wGtzFFyVNFfvqMEhGAJaE7BNnGg")
