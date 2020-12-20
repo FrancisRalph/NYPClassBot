@@ -81,7 +81,7 @@ class TimeTable(BaseCog):
     days = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
 
     @commands.group()
-    # @commands.guild_only()
+    @commands.guild_only()
     async def timetable(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send_help("timetable")
@@ -217,9 +217,9 @@ class TimeTable(BaseCog):
             y = extract_name(message[x])
             output += f"{x+1}. {y}\n"
         embed = discord.Embed(title="List Of Timetables", color=0x0080FF)
-        embed.set_thumbnail(
-            url="https://media.discordapp.net/attachments/770215748860772382/785844394972545094/mongodb-removebg-preview.png"
-        )
+        # embed.set_thumbnail(
+        #     url="https://media.discordapp.net/attachments/770215748860772382/785844394972545094/mongodb-removebg-preview.png"
+        # )
         embed.add_field(name="!remove !add", value=output, inline=False)
         await ctx.send(embed=embed)
 
