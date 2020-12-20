@@ -1,9 +1,11 @@
 # NYPClassBot
 <img src="https://i.imgur.com/7P7b9Yn.png" width="256">
-<br><br>
+<br>
 A Discord bot made with Python that converts a picture of a timetable into data using upscaling and Optical Character Recognition (OCR) AI technology and stores it in the cloud to remind the server whenever a lesson starts.
 
+---
 <img src="https://i.imgur.com/lcr9ZkZ.png" width="500">
+
 ---
 This project is a submission for the Mini Project activity hosted by [NYP Developer Student Club](https://dsc-nyp.web.app/) lasting 7 weeks from 26th October 2020 to 18th December 2020. 
 
@@ -15,9 +17,9 @@ Registers a timetable for the server, maximum of 3.
 <br>The bot will prompt the user to upload an image of a timetable from NYP's website.
 
 <img src="https://i.imgur.com/Uwh9udE.png" width="650">
-<br><br>
+<br>
 <img src="https://i.imgur.com/D4QuIYC.png" width="300">
-<br><br>
+<br>
 <img src="https://i.imgur.com/rpxEDq8.png" width="500">
 
 ---
@@ -44,7 +46,7 @@ Allows you to add links (e.g. zoom) to entries in a timetable.
 <br>Entry input can be an entry's number as seen from !timetable view or a search term that matches a subject name.
 
 <img src="https://i.imgur.com/QwOpNvV.png" width="500">
-<br><br>
+<br>
 <img src="https://i.imgur.com/PBkaPgy.png" width="500">
 
 ---
