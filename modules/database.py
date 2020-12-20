@@ -1,12 +1,13 @@
-import pymongo
-from pymongo import MongoClient
-import tabulate
+import os
 import datetime
 from difflib import SequenceMatcher
 
-cluster = MongoClient(
-    "mongodb+srv://NYPCLASSBOT:fatpeepee123@nyp-class-bot.boaao.mongodb.net/class-links?retryWrites=true&w=majority"
-)
+import pymongo
+from pymongo import MongoClient
+import tabulate
+
+
+cluster = MongoClient(os.getenv("MONGO_HOST"))
 db = cluster["class_links"]
 
 def get_similarity(a, b):

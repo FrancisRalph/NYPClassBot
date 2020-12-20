@@ -1,7 +1,7 @@
 # NYPClassBot
 <img src="https://i.imgur.com/7P7b9Yn.png" width="256">
 <br>
-A Discord bot made with Python that converts a picture of a timetable into data using upscaling and Optical Character Recognition (OCR) AI technology and stores it in the cloud to remind the server whenever a lesson starts.
+A Discord bot made with Python that converts a picture of a timetable into data using upscaling and Optical Character Recognition (OCR) AI technology and stores it in the cloud to remind the discord server whenever a lesson starts.
 
 ---
 <img src="https://i.imgur.com/lcr9ZkZ.png" width="500">
