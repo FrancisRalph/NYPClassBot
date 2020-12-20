@@ -76,6 +76,7 @@ def create_entry_embed(name, entry):
 
     return embed
 
+
 class TimeTable(BaseCog):
     days = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
 

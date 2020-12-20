@@ -7,3 +7,4 @@
 /testenv
 /excel
 */__pycache__/*
+.env
