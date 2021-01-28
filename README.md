@@ -51,7 +51,7 @@ Allows you to add links (e.g. zoom) to entries in a timetable.
 
 ---
 ## Contributions
-Francis Ralph:
+Francis Ralph - [@FrancisRalph](https://github.com/FrancisRalph):
 - User interaction with exception handling
 - Regex magic
     - To process user input appropriately due to how the database is structured
@@ -64,7 +64,7 @@ Francis Ralph:
 
 <br>
 
-Ethan Ng:
+Ethan Ng - [@ethan-rui](https://github.com/ethan-rui):
 - Upscaler AI for upscaling before image-to-text conversion
 - Raw text data cleaning and processing
     - Clean invalid data
@@ -77,7 +77,7 @@ Ethan Ng:
 
 <br>
 
-Derrick Png:
+Derrick Png - [@Derrick-Png](https://github.com/Derrick-Png):
 - OCR AI for image-to-text conversion
 - Implementation of reminders
     - Algorithm to remind server whenever a lesson starts
