@@ -26,7 +26,7 @@ MarkupSafe==1.1.1
 matplotlib==3.3.2
 mccabe==0.6.1
 multidict==4.7.6
-numpy==1.19.2
+numpy==1.22.0
 opencv-contrib-python==4.4.0.46
 openpyxl==3.0.5
 pandas==1.1.3
